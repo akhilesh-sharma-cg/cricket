@@ -1,0 +1,634 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080b09">
+
+<title>WICKETRA | The Pulse of Every Ball</title>
+<meta name="description" content="WICKETRA is a cricket tournament management platform designed to help organizers manage tournaments, teams, players, fixtures, scores and results.">
+<meta name="robots" content="index, follow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<style>
+.auth-modal{
+  position:fixed;inset:0;z-index:9999;display:none;align-items:center;
+  justify-content:center;padding:20px;background:rgba(0,0,0,.82);
+  backdrop-filter:blur(12px)
+}
+.auth-modal.active{display:flex}
+.auth-box{
+  position:relative;width:100%;max-width:440px;padding:34px;
+  border:1px solid rgba(34,197,94,.25);border-radius:18px;
+  background:#101612;box-shadow:0 25px 100px rgba(0,0,0,.55)
+}
+.auth-close{
+  position:absolute;top:15px;right:17px;border:0;background:transparent;
+  color:#aab7ac;font-size:25px;cursor:pointer
+}
+.auth-heading{
+  margin-bottom:8px;color:#fff;font-family:"Barlow Condensed",sans-serif;
+  font-size:34px;font-weight:800;text-transform:uppercase
+}
+.auth-subtitle{margin-bottom:25px;color:#aab7ac;font-size:13px;line-height:1.7}
+.auth-tabs{display:flex;gap:8px;margin-bottom:23px;padding:5px;border-radius:9px;background:#080d0a}
+.auth-tab{
+  flex:1;padding:11px;border:0;border-radius:7px;background:transparent;
+  color:#aab7ac;font-family:inherit;font-weight:700;cursor:pointer
+}
+.auth-tab.active{background:#22c55e;color:#071009}
+.auth-field{margin-bottom:16px}
+.auth-field label{display:block;margin-bottom:8px;color:#dce5dd;font-size:12px;font-weight:700}
+.auth-field input{
+  width:100%;padding:13px 14px;border:1px solid #29362c;border-radius:8px;
+  outline:none;background:#080d0a;color:#fff;font-family:inherit;font-size:14px
+}
+.auth-field input:focus{border-color:#22c55e}
+.auth-submit{
+  width:100%;margin-top:7px;padding:14px;border:0;border-radius:8px;
+  background:#22c55e;color:#071009;font-family:inherit;font-size:13px;
+  font-weight:800;cursor:pointer
+}
+.auth-submit:disabled{opacity:.6;cursor:wait}
+.auth-message{
+  display:none;margin-top:15px;padding:12px;border-radius:8px;
+  background:#1a2820;color:#b9f5c9;font-size:12px;line-height:1.6;
+  overflow-wrap:anywhere
+}
+.auth-message.error{background:#321b1b;color:#ffb7b7}
+
+.auth-account{display:none;align-items:center;gap:12px}
+.auth-account a,.auth-logout{
+  color:#22c55e;font-family:inherit;font-size:12px;font-weight:700;
+  text-decoration:none
+}
+.auth-logout{
+  padding:8px 10px;border:1px solid #29362c;border-radius:6px;
+  background:transparent;cursor:pointer
+}
+.auth-open-button{
+  border:0;background:transparent;color:#fff;font-family:inherit;
+  font-size:13px;font-weight:700;cursor:pointer
+}
+.auth-open-button:hover{color:#22c55e}
+
+@media(max-width:600px){
+  .auth-box{padding:27px 22px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="ambient ambient-one"></div>
+<div class="ambient ambient-two"></div>
+
+<header class="site-header">
+  <a class="brand" href="#home" aria-label="WICKETRA Home">
+    <span class="brand-mark"><i></i><i></i><i></i></span>
+    <span>WICKET<span class="green">RA</span></span>
+  </a>
+
+  <button class="menu-toggle" id="menuToggle" aria-label="Open menu" type="button">
+    <span></span><span></span>
+  </button>
+
+  <nav class="main-nav" id="mainNav">
+    <a class="active" href="#home">Home</a>
+    <a href="#tournaments">Tournaments</a>
+    <a href="#matches">Matches &amp; Live Scores</a>
+    <a href="#rankings">Points Tables &amp; Rankings</a>
+  </nav>
+
+  <div class="header-actions">
+    <button class="auth-open-button" id="openLogin" type="button">Login</button>
+
+    <div class="auth-account" id="authAccount">
+      <a class="button button-small" href="dashboard.html">
+        Dashboard <span>↗</span>
+      </a>
+      <button class="auth-logout" id="logoutButton" type="button">Logout</button>
+    </div>
+  </div>
+</header>
+
+<!-- LOGIN AND SIGN-UP MODAL -->
+<div class="auth-modal" id="authModal" aria-hidden="true">
+  <div class="auth-box" role="dialog" aria-modal="true" aria-labelledby="authHeading">
+
+    <button class="auth-close" id="closeAuth" type="button" aria-label="Close">&times;</button>
+
+    <div class="brand" style="margin-bottom:22px;">
+      <span class="brand-mark"><i></i><i></i><i></i></span>
+      <span>WICKET<span class="green">RA</span></span>
+    </div>
+
+    <h2 class="auth-heading" id="authHeading">WELCOME BACK.</h2>
+    <p class="auth-subtitle" id="authSubtitle">
+      Sign in to access your WICKETRA account and manage your cricket world.
+    </p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="loginTab" type="button">Login</button>
+      <button class="auth-tab" id="signupTab" type="button">Sign Up</button>
+    </div>
+
+    <form id="authForm">
+      <div class="auth-field" id="nameField" style="display:none;">
+        <label for="authName">Full name</label>
+        <input type="text" id="authName" autocomplete="name" placeholder="Enter your full name">
+      </div>
+
+      <div class="auth-field">
+        <label for="authEmail">Email address</label>
+        <input type="email" id="authEmail" autocomplete="email" placeholder="Enter your email" required>
+      </div>
+
+      <div class="auth-field">
+        <label for="authPassword">Password</label>
+        <input type="password" id="authPassword" autocomplete="current-password"
+               placeholder="Enter your password" minlength="6" required>
+      </div>
+
+      <button class="auth-submit" id="authSubmit" type="submit">LOGIN TO WICKETRA</button>
+      <div class="auth-message" id="authMessage" role="status" aria-live="polite"></div>
+    </form>
+  </div>
+</div>
+
+<main>
+
+<section class="hero section-wrap" id="home">
+  <div class="hero-copy">
+    <div class="eyebrow">
+      <span class="pulse-dot"></span>
+      THE HOME OF CRICKET TOURNAMENTS
+    </div>
+
+    <h1>THE PULSE<br>OF <span>EVERY BALL.</span></h1>
+
+    <p class="hero-description">
+      Every tournament. Every team. Every moment.<br>
+      Bring your cricket world together.
+    </p>
+
+    <div class="hero-actions">
+      <button class="button" id="heroCreateButton" type="button">
+        Create a tournament <span>↗</span>
+      </button>
+      <a class="text-button" href="#tournaments">Explore tournaments <span>→</span></a>
+    </div>
+
+    <div class="hero-proof">
+      <div class="avatar-stack">
+        <i>🏏</i><i>🏆</i><i>⚡</i>
+      </div>
+      <span>Built for the spirit of the game</span>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="visual-topline">
+      <span>WICKETRA / CRICKET</span>
+      <span>GAME ON <b>●</b></span>
+    </div>
+
+    <div class="stadium-glow"></div>
+    <div class="stadium">
+      <div class="stadium-lights"></div>
+      <div class="stands"></div>
+      <div class="field">
+        <div class="field-ring"></div>
+        <div class="pitch"><span class="stumps"></span></div>
+      </div>
+    </div>
+
+    <div class="floating-score">
+      <div class="score-label">
+        <span><i class="live-dot"></i> MATCH CENTRE</span>
+        <b>WICKETRA</b>
+      </div>
+      <div class="score-teams"><strong>LIVE</strong><span>CRICKET</span></div>
+      <div class="score-number"><span style="font-size:24px;">MATCHES</span></div>
+      <div class="score-bottom"><span>YOUR CRICKET WORLD</span></div>
+    </div>
+
+    <div class="hero-vertical">THE GAME NEVER STOPS</div>
+  </div>
+
+  <div class="hero-bottomline">
+    <span>01 / BUILT FOR EVERY OVER</span>
+    <a href="#tournaments">SCROLL TO EXPLORE ↓</a>
+  </div>
+</section>
+
+<section class="ticker">
+  <div class="ticker-track">
+    <span>TOURNAMENTS <b>✳</b></span>
+    <span>LIVE SCORES <b>✳</b></span>
+    <span>TEAM MANAGEMENT <b>✳</b></span>
+    <span>PLAYER STATS <b>✳</b></span>
+    <span>FIXTURES <b>✳</b></span>
+    <span>TOURNAMENTS <b>✳</b></span>
+    <span>LIVE SCORES <b>✳</b></span>
+    <span>TEAM MANAGEMENT <b>✳</b></span>
+    <span>PLAYER STATS <b>✳</b></span>
+    <span>FIXTURES <b>✳</b></span>
+  </div>
+</section>
+
+<section class="section section-wrap" id="tournaments">
+  <div class="section-heading">
+    <div>
+      <div class="eyebrow">YOUR NEXT BIG MOMENT</div>
+      <h2>BUILT FOR THE<br><span>BIG MATCH.</span></h2>
+    </div>
+    <p>From a local weekend league to a multi-team championship, manage your cricket tournament from one place.</p>
+  </div>
+
+  <div class="tournament-grid">
+    <article class="tournament-card">
+      <div class="card-art art-one">
+        <span class="art-orbit"></span><span class="art-ball"></span><span class="art-number">01</span>
+      </div>
+      <div class="card-meta"><span class="tag">TOURNAMENT CONTROL</span><span>↗</span></div>
+      <h3>Own the entire game.</h3>
+      <p>Create tournaments, choose a format and keep every detail organised.</p>
+    </article>
+
+    <article class="tournament-card">
+      <div class="card-art art-two">
+        <span class="art-lines"></span><span class="art-number">02</span><span class="art-symbol">XI</span>
+      </div>
+      <div class="card-meta"><span class="tag">TEAMS &amp; PLAYERS</span><span>↗</span></div>
+      <h3>Every player. One squad.</h3>
+      <p>Manage team registrations, player profiles and squad lists.</p>
+    </article>
+
+    <article class="tournament-card">
+      <div class="card-art art-three">
+        <span class="art-number">03</span><span class="score-graphic">LIVE</span>
+        <span class="live-pill"><i></i> MATCH CENTRE</span>
+      </div>
+      <div class="card-meta"><span class="tag">LIVE MATCH CENTRE</span><span>↗</span></div>
+      <h3>Feel every delivery.</h3>
+      <p>Manage ball-by-ball scoring, match results and player performances.</p>
+    </article>
+  </div>
+</section>
+
+<section class="match-section" id="matches">
+  <div class="section-wrap match-inner">
+    <div>
+      <div class="eyebrow">THE ACTION, IN REAL TIME</div>
+      <h2>ONE GAME.<br><span>EVERY DETAIL.</span></h2>
+      <p class="muted">A match centre designed to keep every important cricket moment in focus.</p>
+    </div>
+
+    <div class="match-preview">
+      <div class="match-preview-top">
+        <span><i class="live-dot"></i> MATCH CENTRE</span>
+        <span class="tag">LIVE SCORES</span>
+      </div>
+      <div style="text-align:center;padding:35px 15px;">
+        <div style="font-size:38px;margin-bottom:15px;">🏏</div>
+        <h3 style="margin-bottom:10px;">Follow the action</h3>
+        <p style="color:#aab7ac;font-size:13px;line-height:1.8;">
+          Live match scores, fixtures and results will appear here when available.
+        </p>
+      </div>
+      <div class="match-divider">
+        <span>WICKETRA</span><span>CRICKET MATCH CENTRE</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-wrap" id="rankings">
+  <div class="section-heading">
+    <div>
+      <div class="eyebrow">MORE THAN THE SCORE</div>
+      <h2>THE NUMBERS<br><span>TELL A STORY.</span></h2>
+    </div>
+    <p>Keep standings, results and player performances connected to your tournament.</p>
+  </div>
+
+  <div class="stats-row">
+    <div><strong>01</strong><span>Points tables</span><p>Track wins, losses and tournament standings.</p></div>
+    <div><strong>02</strong><span>Player statistics</span><p>Follow runs, wickets and player performances.</p></div>
+    <div><strong>03</strong><span>Match results</span><p>Keep tournament match results organised.</p></div>
+    <div><strong>04</strong><span>Smart management</span><p>Give tournament organisers the tools they need.</p></div>
+  </div>
+</section>
+
+<section class="cta-section section-wrap" id="create">
+  <div class="cta-glow"></div>
+  <div class="eyebrow"><span class="pulse-dot"></span> YOUR TOURNAMENT STARTS HERE</div>
+  <h2>READY TO<br><span>TAKE THE FIELD?</span></h2>
+  <p>Make your next cricket tournament easier to organise and better to follow.</p>
+  <button class="button" id="ctaCreateButton" type="button">Create a tournament <span>↗</span></button>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-main">
+    <div class="footer-brand">
+      <a class="brand" href="index.html">
+        <span class="brand-mark"><i></i><i></i><i></i></span>
+        <span>WICKET<span class="green">RA</span></span>
+      </a>
+      <p>THE PULSE OF EVERY BALL.</p>
+      <p class="footer-description">A platform built to make cricket tournament management simpler, smarter and better.</p>
+    </div>
+
+    <div class="footer-column">
+      <h4>COMPANY</h4>
+      <a href="about.html">About Us</a>
+      <a href="contact.html">Contact Us</a>
+    </div>
+
+    <div class="footer-column">
+      <h4>LEGAL</h4>
+      <a href="privacy-policy.html">Privacy Policy</a>
+      <a href="terms.html">Terms &amp; Conditions</a>
+      <a href="disclaimer.html">Disclaimer</a>
+    </div>
+
+    <div class="footer-column">
+      <h4>CRICKET</h4>
+      <a href="#tournaments">Tournaments</a>
+      <a href="#matches">Matches &amp; Live Scores</a>
+      <a href="#rankings">Points Tables &amp; Rankings</a>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>© 2026 WICKETRA. ALL RIGHTS RESERVED.</span>
+    <span>THE PULSE OF EVERY BALL.</span>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+(() => {
+  "use strict";
+
+  const SUPABASE_URL = "https://ywehjzrajdokbzvvnsfk.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_TXW4VKa-8hdrigWVzju6bA_5fQh19nj";
+
+  if (!window.supabase) {
+    console.error("Supabase library did not load.");
+    return;
+  }
+
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const modal = document.getElementById("authModal");
+  const form = document.getElementById("authForm");
+  const loginTab = document.getElementById("loginTab");
+  const signupTab = document.getElementById("signupTab");
+  const nameField = document.getElementById("nameField");
+  const nameInput = document.getElementById("authName");
+  const emailInput = document.getElementById("authEmail");
+  const passwordInput = document.getElementById("authPassword");
+  const submitButton = document.getElementById("authSubmit");
+  const message = document.getElementById("authMessage");
+  const heading = document.getElementById("authHeading");
+  const subtitle = document.getElementById("authSubtitle");
+  const openLogin = document.getElementById("openLogin");
+  const authAccount = document.getElementById("authAccount");
+  const logoutButton = document.getElementById("logoutButton");
+
+  let authMode = "login";
+  let authBusy = false;
+
+  function showMessage(text, isError = false) {
+    message.textContent = text;
+    message.classList.toggle("error", isError);
+    message.style.display = "block";
+  }
+
+  function clearMessage() {
+    message.textContent = "";
+    message.style.display = "none";
+    message.classList.remove("error");
+  }
+
+  function openModal(mode = "login") {
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    setAuthMode(mode);
+
+    setTimeout(() => {
+      (mode === "signup" ? nameInput : emailInput).focus();
+    }, 50);
+  }
+
+  function closeModal() {
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    clearMessage();
+  }
+
+  function setAuthMode(mode) {
+    authMode = mode;
+    clearMessage();
+
+    const isSignup = mode === "signup";
+
+    loginTab.classList.toggle("active", !isSignup);
+    signupTab.classList.toggle("active", isSignup);
+    nameField.style.display = isSignup ? "block" : "none";
+    nameInput.required = isSignup;
+
+    heading.textContent = isSignup ? "JOIN WICKETRA." : "WELCOME BACK.";
+    subtitle.textContent = isSignup
+      ? "Create your account to start managing your cricket world."
+      : "Sign in to access your WICKETRA account and manage your cricket world.";
+
+    submitButton.textContent = isSignup ? "CREATE ACCOUNT" : "LOGIN TO WICKETRA";
+    passwordInput.autocomplete = isSignup ? "new-password" : "current-password";
+  }
+
+  function updateHeader(session) {
+    const signedIn = Boolean(session && session.user);
+
+    openLogin.style.display = signedIn ? "none" : "inline-block";
+    authAccount.style.display = signedIn ? "flex" : "none";
+  }
+
+  openLogin.addEventListener("click", () => openModal("login"));
+  document.getElementById("closeAuth").addEventListener("click", closeModal);
+  loginTab.addEventListener("click", () => setAuthMode("login"));
+  signupTab.addEventListener("click", () => setAuthMode("signup"));
+
+  modal.addEventListener("click", event => {
+    if (event.target === modal) closeModal();
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && modal.classList.contains("active")) {
+      closeModal();
+    }
+  });
+
+  async function openOrganizerWorkspace() {
+    const { data, error } = await db.auth.getSession();
+
+    if (error) {
+      openModal("login");
+      showMessage("Could not check your session: " + error.message, true);
+      return;
+    }
+
+    if (data.session) {
+      window.location.href = "tournaments.html";
+      return;
+    }
+
+    openModal("login");
+    showMessage("Please sign in before creating a tournament.");
+  }
+
+  document.getElementById("heroCreateButton")
+    .addEventListener("click", openOrganizerWorkspace);
+
+  document.getElementById("ctaCreateButton")
+    .addEventListener("click", openOrganizerWorkspace);
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (authBusy) return;
+
+    clearMessage();
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    const fullName = nameInput.value.trim();
+
+    if (!email || !password) {
+      showMessage("Please enter your email and password.", true);
+      return;
+    }
+
+    if (authMode === "signup" && !fullName) {
+      showMessage("Please enter your full name.", true);
+      return;
+    }
+
+    if (password.length < 6) {
+      showMessage("Your password must contain at least 6 characters.", true);
+      return;
+    }
+
+    authBusy = true;
+    submitButton.disabled = true;
+    submitButton.textContent = authMode === "signup"
+      ? "CREATING ACCOUNT..."
+      : "SIGNING IN...";
+
+    try {
+      if (authMode === "signup") {
+        const { data, error } = await db.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { full_name: fullName }
+          }
+        });
+
+        if (error) throw error;
+
+        if (data.session) {
+          updateHeader(data.session);
+          showMessage("Account created. Opening your WICKETRA workspace...");
+          setTimeout(() => {
+            window.location.href = "dashboard.html";
+          }, 1000);
+        } else {
+          showMessage(
+            "Your account has been created. Check your email for the confirmation link. After confirming your email, return here and log in."
+          );
+        }
+
+      } else {
+        const { data, error } = await db.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (error) throw error;
+
+        updateHeader(data.session);
+        showMessage("Login successful. Opening your dashboard...");
+
+        setTimeout(() => {
+          window.location.href = "dashboard.html";
+        }, 700);
+      }
+
+    } catch (error) {
+      showMessage(error.message || "Authentication failed. Please try again.", true);
+    } finally {
+      authBusy = false;
+      submitButton.disabled = false;
+      submitButton.textContent = authMode === "signup"
+        ? "CREATE ACCOUNT"
+        : "LOGIN TO WICKETRA";
+    }
+  });
+
+  logoutButton.addEventListener("click", async () => {
+    logoutButton.disabled = true;
+    logoutButton.textContent = "Logging out...";
+
+    const { error } = await db.auth.signOut();
+
+    logoutButton.disabled = false;
+    logoutButton.textContent = "Logout";
+
+    if (error) {
+      alert("Logout failed: " + error.message);
+      return;
+    }
+
+    updateHeader(null);
+    window.location.href = "index.html";
+  });
+
+  async function initializeAuth() {
+    const { data, error } = await db.auth.getSession();
+
+    if (error) {
+      console.error("Session check failed:", error.message);
+      return;
+    }
+
+    updateHeader(data.session);
+
+    if (window.location.hash === "#login") {
+      openModal("login");
+    }
+  }
+
+  initializeAuth();
+
+  db.auth.onAuthStateChange((_event, session) => {
+    updateHeader(session);
+  });
+
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,820 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080c0b">
+<title>WICKETRA | Teams & Players</title>
+<meta name="description" content="Create cricket teams, manage tournament registrations and view squad membership with WICKETRA.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg:#080c0b;
+  --panel:#101715;
+  --green:#22c55e;
+  --light:#4ade80;
+  --text:#f4f7f5;
+  --muted:#84918a;
+  --border:rgba(255,255,255,.08);
+  --danger:#ef6464;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif}
+a{text-decoration:none;color:inherit}
+button,input,select{font:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+
+.sidebar{
+  width:245px;position:fixed;inset:0 auto 0 0;background:#0c1210;
+  border-right:1px solid var(--border);padding:27px 18px;z-index:30;
+  display:flex;flex-direction:column;transition:transform .25s ease;
+}
+.logo{font:800 31px 'Barlow Condensed';margin:0 0 40px 10px;letter-spacing:1px}
+.logo span{color:var(--green)}
+.side-label{font-size:10px;color:#64716a;letter-spacing:2px;font-weight:700;margin:25px 10px 12px}
+.nav-link{
+  display:flex;gap:13px;align-items:center;padding:13px 14px;
+  border-radius:9px;color:#9ba79f;font-size:12px;margin:4px 0;
+  border:1px solid transparent;background:transparent;text-align:left;
+}
+.nav-link:hover,.nav-link.active{
+  background:rgba(34,197,94,.12);color:var(--light);
+}
+.sidebar-spacer{flex:1}
+.sidebar-bottom{border-top:1px solid var(--border);padding-top:12px}
+#logoutButton{width:100%;cursor:pointer}
+
+.main{margin-left:245px;padding:28px 36px 45px;max-width:1650px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:38px;gap:15px}
+.breadcrumb{font-size:11px;color:var(--muted)}
+.breadcrumb strong{color:white}
+.profile{display:flex;align-items:center;gap:10px;font-size:12px}
+.avatar{
+  width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  background:#173321;color:var(--green);font-weight:800
+}
+.muted{font-size:10px;color:var(--muted);margin-top:3px}
+.menu-toggle{display:none;background:#17201b;color:white;border:1px solid var(--border);padding:9px;border-radius:8px;cursor:pointer}
+
+.welcome{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:28px}
+.eyebrow{color:var(--green);font-size:10px;letter-spacing:2.5px;font-weight:700;margin-bottom:8px}
+h1,h2,h3{font-family:'Barlow Condensed';text-transform:uppercase}
+h1{font-size:46px;line-height:1.05}
+.subtitle{font-size:12px;color:var(--muted);margin-top:7px;line-height:1.7}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  border:0;border-radius:8px;padding:12px 17px;font-size:10px;
+  font-weight:800;cursor:pointer;transition:.2s;
+}
+.primary{background:var(--green);color:#061009}
+.primary:hover{background:var(--light);transform:translateY(-1px)}
+.secondary{background:#17201b;color:white;border:1px solid var(--border)}
+.secondary:hover{border-color:var(--green);color:var(--light)}
+button:disabled{opacity:.55;cursor:not-allowed;transform:none}
+
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-bottom:20px}
+.stat{
+  padding:17px;background:linear-gradient(145deg,#142019,#0e1511);
+  border:1px solid var(--border);border-radius:12px;
+}
+.stat-label{font-size:9px;color:var(--muted);font-weight:700;letter-spacing:1px}
+.stat-value{font:700 32px 'Barlow Condensed';margin-top:8px}
+.stat-note{font-size:9px;color:#718078;margin-top:3px}
+
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:22px;margin-bottom:20px}
+.panel-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:19px}
+.panel-heading h2{font-size:23px}
+.panel-subtitle{font-size:10px;color:var(--muted);margin-top:4px}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}
+.field{display:flex;flex-direction:column;gap:8px}
+.field.full{grid-column:1/-1}
+label{font-size:11px;color:#b8c4bc;font-weight:600}
+input,select{
+  width:100%;background:#0b110e;color:white;border:1px solid var(--border);
+  border-radius:8px;padding:13px;font-size:12px;outline:none;
+}
+input:focus,select:focus{border-color:var(--green)}
+select option{background:#101715}
+.form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+
+.notice{
+  background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);
+  padding:14px;border-radius:9px;color:#a9c9b2;font-size:11px;
+  line-height:1.7;margin-top:18px;
+}
+.info-notice{
+  background:rgba(255,255,255,.025);border:1px solid var(--border);
+  padding:14px;border-radius:9px;color:#aab7ac;font-size:11px;line-height:1.8;
+}
+.filter-row{display:flex;gap:12px;align-items:center;margin-bottom:17px}
+.filter-row input{max-width:360px}
+.filter-row select{max-width:210px}
+.table-wrap{width:100%;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:650px}
+th{text-align:left;color:#819087;font-size:10px;letter-spacing:1px;padding:13px;border-bottom:1px solid var(--border)}
+td{padding:15px 13px;font-size:11px;border-bottom:1px solid var(--border);color:#dce5de}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+.status{
+  display:inline-block;padding:5px 9px;border-radius:20px;
+  background:rgba(34,197,94,.09);color:var(--light);font-size:9px;
+}
+.status.neutral{background:rgba(255,255,255,.07);color:#c5cec8}
+.empty{text-align:center;padding:35px 15px;color:var(--muted);font-size:11px;line-height:1.8}
+.empty strong{display:block;color:white;font:600 21px 'Barlow Condensed';margin-bottom:5px}
+.loading{text-align:center;padding:25px;color:var(--muted);font-size:11px}
+.error-note{color:#ffaaaa;font-size:11px;line-height:1.7;padding:12px}
+.small-link{color:var(--light);font-size:10px;font-weight:700}
+.small-link:hover{text-decoration:underline}
+.footer{border-top:1px solid var(--border);padding-top:20px;color:#68756d;font-size:10px;display:flex;justify-content:space-between;gap:12px}
+.toast{
+  position:fixed;right:20px;bottom:20px;z-index:100;max-width:370px;
+  background:#17251c;border:1px solid var(--green);padding:14px 18px;
+  border-radius:9px;color:white;font-size:11px;line-height:1.6;
+  box-shadow:0 12px 35px rgba(0,0,0,.4);
+}
+.toast.error{border-color:var(--danger)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:20}
+.overlay.show{display:block}
+
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0;padding:20px 16px 35px}
+  .menu-toggle{display:block}
+  .welcome{align-items:flex-start;flex-direction:column}
+  .profile-info{display:none}
+}
+@media(max-width:600px){
+  .form-grid{grid-template-columns:1fr}
+  .field.full{grid-column:auto}
+  .filter-row{flex-direction:column;align-items:stretch}
+  .filter-row input,.filter-row select{max-width:none}
+  h1{font-size:37px}
+  .panel{padding:16px}
+  .footer{flex-direction:column}
+  .stats{grid-template-columns:1fr}
+  .welcome>.btn{width:100%}
+}
+</style>
+</head>
+
+<body>
+
+<div class="overlay" id="overlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <a href="dashboard.html" class="logo">WICKET<span>RA</span></a>
+
+  <div class="side-label">MAIN MENU</div>
+  <a class="nav-link" href="dashboard.html">⌂ Overview</a>
+  <a class="nav-link" href="tournaments.html">🏆 Tournaments</a>
+  <a class="nav-link active" href="teams.html">👥 Teams & Players</a>
+  <a class="nav-link" href="fixtures.html">📅 Fixtures</a>
+  <a class="nav-link" href="live-scoring.html">🏏 Live Scoring</a>
+  <a class="nav-link" href="points-table.html">📊 Points & Rankings</a>
+
+  <div class="side-label">MANAGEMENT</div>
+  <a class="nav-link" href="notifications.html">🔔 Notifications</a>
+  <a class="nav-link" href="reports.html">📄 Match Reports</a>
+
+  <div class="sidebar-spacer"></div>
+  <div class="sidebar-bottom">
+    <a class="nav-link" href="index.html">↗ Visit Website</a>
+    <button class="nav-link" id="logoutButton" type="button">⇥ Logout</button>
+  </div>
+</aside>
+
+<main class="main">
+
+<header class="topbar">
+  <div style="display:flex;align-items:center;gap:13px">
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">☰</button>
+    <div class="breadcrumb">WICKETRA / <strong>Teams & Players</strong></div>
+  </div>
+
+  <div class="profile">
+    <div class="avatar" id="userAvatar">U</div>
+    <div class="profile-info">
+      <strong id="userName">Loading account...</strong>
+      <div class="muted" id="userRole">WICKETRA member</div>
+    </div>
+  </div>
+</header>
+
+<section class="welcome">
+  <div>
+    <div class="eyebrow">SQUAD & PLAYER CONTROL</div>
+    <h1>Teams & Players<span style="color:var(--green)">.</span></h1>
+    <p class="subtitle">Create teams, register them for tournaments and view registered squad members.</p>
+  </div>
+  <a href="#createTeam" class="btn primary">＋ CREATE TEAM</a>
+</section>
+
+<section class="stats">
+  <div class="stat">
+    <div class="stat-label">MY TEAMS</div>
+    <div class="stat-value" id="statTeams">—</div>
+    <div class="stat-note">Teams created by your account</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">TOURNAMENT ENTRIES</div>
+    <div class="stat-value" id="statRegistrations">—</div>
+    <div class="stat-note">Registrations across your teams</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">SQUAD MEMBERSHIPS</div>
+    <div class="stat-value" id="statMembers">—</div>
+    <div class="stat-note">Membership records available to your account</div>
+  </div>
+</section>
+
+<section class="panel" id="createTeam">
+  <div class="panel-heading">
+    <div>
+      <h2>CREATE A TEAM</h2>
+      <p class="panel-subtitle">Create a team and submit it for your selected tournament.</p>
+    </div>
+  </div>
+
+  <form id="teamForm">
+    <div class="form-grid">
+      <div class="field full">
+        <label for="teamName">Team Name *</label>
+        <input id="teamName" name="teamName" required maxlength="100" placeholder="Enter official team name">
+      </div>
+
+      <div class="field">
+        <label for="tournament">Tournament *</label>
+        <select id="tournament" name="tournament" required>
+          <option value="">Loading your tournaments...</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="shortName">Team Short Name</label>
+        <input id="shortName" name="shortName" maxlength="12" placeholder="e.g. WKT">
+      </div>
+
+      <div class="field">
+        <label for="homeCity">Home City</label>
+        <input id="homeCity" name="homeCity" maxlength="100" placeholder="Enter team city">
+      </div>
+
+      <div class="field">
+        <label for="description">Team Description</label>
+        <input id="description" name="description" maxlength="500" placeholder="Optional team description">
+      </div>
+    </div>
+
+    <div class="notice">
+      The account creating the team is assigned as its captain by the database. The team is then submitted to the selected tournament. Registration approval depends on the tournament's rules and database permissions.
+    </div>
+
+    <div class="form-actions">
+      <button type="reset" class="btn secondary">CLEAR</button>
+      <button type="submit" class="btn primary" id="saveTeamButton">CREATE & REGISTER TEAM</button>
+    </div>
+  </form>
+</section>
+
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h2>TEAM DIRECTORY</h2>
+      <p class="panel-subtitle">Teams created by your signed-in account.</p>
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <input type="search" id="teamSearch" placeholder="Search your teams..." aria-label="Search teams">
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>TEAM NAME</th>
+          <th>SHORT NAME</th>
+          <th>HOME CITY</th>
+          <th>CREATED</th>
+          <th>REGISTRATIONS</th>
+        </tr>
+      </thead>
+      <tbody id="teamTableBody">
+        <tr><td colspan="5" class="loading">Loading your teams...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h2>TOURNAMENT REGISTRATIONS</h2>
+      <p class="panel-subtitle">Registration status for your teams.</p>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>TEAM</th>
+          <th>TOURNAMENT</th>
+          <th>STATUS</th>
+          <th>SUBMITTED</th>
+        </tr>
+      </thead>
+      <tbody id="registrationTableBody">
+        <tr><td colspan="4" class="loading">Loading registrations...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h2>SQUAD MEMBERS</h2>
+      <p class="panel-subtitle">Membership records visible to your account.</p>
+    </div>
+  </div>
+
+  <div class="info-notice">
+    Adding another player requires that player to have a WICKETRA account. Your current database does not yet include a player invitation or searchable player directory. This page will not create fake player profiles or save unsupported player details.
+  </div>
+
+  <div class="table-wrap" style="margin-top:17px">
+    <table>
+      <thead>
+        <tr>
+          <th>TEAM</th>
+          <th>MEMBER ACCOUNT</th>
+          <th>TEAM ROLE</th>
+          <th>JERSEY NUMBER</th>
+        </tr>
+      </thead>
+      <tbody id="memberTableBody">
+        <tr><td colspan="4" class="loading">Loading squad memberships...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer class="footer">
+  <span>© 2026 WICKETRA. THE PULSE OF EVERY BALL.</span>
+  <span>Cricket. Connected.</span>
+</footer>
+
+</main>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+(() => {
+  "use strict";
+
+  const SUPABASE_URL = "https://ywehjzrajdokbzvvnsfk.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_TXW4VKa-8hdrigWVzju6bA_5fQh19nj";
+
+  const $ = id => document.getElementById(id);
+
+  const sidebar = $("sidebar");
+  const overlay = $("overlay");
+  const menuToggle = $("menuToggle");
+  const toast = $("toast");
+
+  let db;
+  let currentUser = null;
+  let tournaments = [];
+  let teams = [];
+  let registrations = [];
+  let members = [];
+  let toastTimer;
+
+  function notify(message, isError = false) {
+    toast.textContent = message;
+    toast.classList.toggle("error", isError);
+    toast.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.hidden = true, 4500);
+  }
+
+  function setText(id, value) {
+    $(id).textContent = value;
+  }
+
+  function showErrorRow(id, columns, message) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = columns;
+    cell.className = "error-note";
+    cell.textContent = message;
+    row.appendChild(cell);
+    $(id).replaceChildren(row);
+  }
+
+  function emptyRow(id, columns, message) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = columns;
+    cell.className = "empty";
+    cell.textContent = message;
+    row.appendChild(cell);
+    $(id).replaceChildren(row);
+  }
+
+  function addCell(row, value) {
+    const cell = document.createElement("td");
+    cell.textContent = value == null || value === "" ? "—" : String(value);
+    row.appendChild(cell);
+    return cell;
+  }
+
+  function pretty(value) {
+    if (!value) return "Unknown";
+    return String(value)
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, letter => letter.toUpperCase());
+  }
+
+  function formatDate(value) {
+    if (!value) return "—";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "—";
+    return date.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric"
+    });
+  }
+
+  function showSidebar(open) {
+    sidebar.classList.toggle("open", open);
+    overlay.classList.toggle("show", open);
+    menuToggle.setAttribute("aria-expanded", String(open));
+  }
+
+  menuToggle.addEventListener("click", () => {
+    showSidebar(!sidebar.classList.contains("open"));
+  });
+
+  overlay.addEventListener("click", () => showSidebar(false));
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") showSidebar(false);
+  });
+
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 900) showSidebar(false);
+  });
+
+  async function logout() {
+    $("logoutButton").disabled = true;
+    const { error } = await db.auth.signOut();
+
+    if (error) {
+      $("logoutButton").disabled = false;
+      notify("Logout failed: " + error.message, true);
+      return;
+    }
+
+    window.location.replace("index.html");
+  }
+
+  $("logoutButton").addEventListener("click", logout);
+
+  async function loadProfile() {
+    const { data, error } = await db
+      .from("profiles")
+      .select("full_name, role")
+      .eq("id", currentUser.id)
+      .maybeSingle();
+
+    const fallback = currentUser.email?.split("@")[0] || "WICKETRA User";
+    const name = !error && data?.full_name ? data.full_name : fallback;
+
+    setText("userName", name);
+    setText("userAvatar", name.charAt(0).toUpperCase());
+    setText("userRole", !error && data?.role ? pretty(data.role) : "WICKETRA member");
+  }
+
+  async function loadTournaments() {
+    const select = $("tournament");
+
+    const { data, error } = await db
+      .from("tournaments")
+      .select("id, name, status, registration_mode")
+      .eq("organizer_id", currentUser.id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      select.innerHTML = '<option value="">Could not load tournaments</option>';
+      notify("Could not load tournaments: " + error.message, true);
+      return;
+    }
+
+    tournaments = data || [];
+    select.replaceChildren();
+
+    const first = document.createElement("option");
+    first.value = "";
+    first.textContent = tournaments.length
+      ? "Select tournament"
+      : "No tournaments created yet";
+    select.appendChild(first);
+
+    tournaments.forEach(tournament => {
+      const option = document.createElement("option");
+      option.value = tournament.id;
+      option.textContent = tournament.name + " · " + pretty(tournament.status);
+      select.appendChild(option);
+    });
+  }
+
+  async function createTeam(event) {
+    event.preventDefault();
+
+    const button = $("saveTeamButton");
+    const name = $("teamName").value.trim();
+    const shortName = $("shortName").value.trim();
+    const city = $("homeCity").value.trim();
+    const description = $("description").value.trim();
+    const tournamentId = $("tournament").value;
+
+    if (!name || !tournamentId) {
+      notify("Enter a team name and select a tournament.", true);
+      return;
+    }
+
+    if (name.length > 100 || shortName.length > 12) {
+      notify("Please check the team name and short name lengths.", true);
+      return;
+    }
+
+    const tournament = tournaments.find(item => item.id === tournamentId);
+    if (!tournament) {
+      notify("Please select one of your available tournaments.", true);
+      return;
+    }
+
+    if (tournament.status !== "registration_open") {
+      notify("This tournament is not currently open for registration. You can create the team after selecting an open tournament.", true);
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = "SAVING TEAM...";
+
+    try {
+      const teamPayload = {
+        name,
+        created_by: currentUser.id,
+        is_public: true
+      };
+
+      if (shortName) teamPayload.short_name = shortName;
+      if (city) teamPayload.home_city = city;
+      if (description) teamPayload.description = description;
+
+      const { data: team, error: teamError } = await db
+        .from("teams")
+        .insert(teamPayload)
+        .select("id, name")
+        .single();
+
+      if (teamError) {
+        throw new Error("Team creation failed: " + teamError.message);
+      }
+
+      // The database's team-creator trigger is expected to add
+      // the creator as the team's captain.
+      const { error: registrationError } = await db
+        .from("team_registrations")
+        .insert({
+          tournament_id: tournamentId,
+          team_id: team.id,
+          registered_by: currentUser.id,
+          submitted_by: currentUser.id,
+          status: "pending"
+        });
+
+      if (registrationError) {
+        notify(
+          "Team was created, but tournament registration failed: " +
+          registrationError.message +
+          ". The team remains saved in your directory.",
+          true
+        );
+      } else {
+        notify("Team created and registration submitted successfully.");
+      }
+
+      $("teamForm").reset();
+      await loadAllData();
+
+    } catch (error) {
+      notify(error.message || "An unexpected error occurred.", true);
+    } finally {
+      button.disabled = false;
+      button.textContent = "CREATE & REGISTER TEAM";
+    }
+  }
+
+  $("teamForm").addEventListener("submit", createTeam);
+
+  async function loadAllData() {
+    await loadTournaments();
+
+    const teamResult = await db
+      .from("teams")
+      .select("id, name, short_name, home_city, description, created_at")
+      .eq("created_by", currentUser.id)
+      .order("created_at", { ascending: false });
+
+    if (teamResult.error) {
+      setText("statTeams", "!");
+      showErrorRow("teamTableBody", 5, "Could not load teams: " + teamResult.error.message);
+      showErrorRow("registrationTableBody", 4, "Team registrations could not be loaded.");
+      showErrorRow("memberTableBody", 4, "Squad memberships could not be loaded.");
+      return;
+    }
+
+    teams = teamResult.data || [];
+    setText("statTeams", String(teams.length));
+
+    renderTeams();
+
+    if (!teams.length) {
+      registrations = [];
+      members = [];
+      setText("statRegistrations", "0");
+      setText("statMembers", "0");
+      emptyRow("registrationTableBody", 4, "No tournament registrations yet.");
+      emptyRow("memberTableBody", 4, "No squad membership records available.");
+      return;
+    }
+
+    const teamIds = teams.map(team => team.id);
+
+    const registrationResult = await db
+      .from("team_registrations")
+      .select("id, team_id, tournament_id, status, registered_at")
+      .in("team_id", teamIds)
+      .order("registered_at", { ascending: false });
+
+    if (registrationResult.error) {
+      setText("statRegistrations", "!");
+      showErrorRow("registrationTableBody", 4, "Could not load registrations: " + registrationResult.error.message);
+    } else {
+      registrations = registrationResult.data || [];
+      setText("statRegistrations", String(registrations.length));
+      renderRegistrations();
+    }
+
+    const memberResult = await db
+      .from("team_members")
+      .select("id, team_id, user_id, member_role, jersey_number")
+      .in("team_id", teamIds);
+
+    if (memberResult.error) {
+      setText("statMembers", "—");
+      showErrorRow("memberTableBody", 4, "Squad membership records are not available to this account: " + memberResult.error.message);
+    } else {
+      members = memberResult.data || [];
+      setText("statMembers", String(members.length));
+      renderMembers();
+    }
+  }
+
+  function renderTeams() {
+    const body = $("teamTableBody");
+    const query = $("teamSearch").value.trim().toLowerCase();
+
+    const filtered = teams.filter(team =>
+      (team.name || "").toLowerCase().includes(query) ||
+      (team.short_name || "").toLowerCase().includes(query) ||
+      (team.home_city || "").toLowerCase().includes(query)
+    );
+
+    body.replaceChildren();
+
+    if (!filtered.length) {
+      emptyRow("teamTableBody", 5, teams.length
+        ? "No teams match your search."
+        : "You have not created any teams yet.");
+      return;
+    }
+
+    filtered.forEach(team => {
+      const row = document.createElement("tr");
+      addCell(row, team.name);
+      addCell(row, team.short_name);
+      addCell(row, team.home_city);
+      addCell(row, formatDate(team.created_at));
+
+      const teamRegistrations = registrations.filter(item => item.team_id === team.id);
+      addCell(row, String(teamRegistrations.length));
+
+      body.appendChild(row);
+    });
+  }
+
+  function renderRegistrations() {
+    const body = $("registrationTableBody");
+    body.replaceChildren();
+
+    if (!registrations.length) {
+      emptyRow("registrationTableBody", 4, "No tournament registrations have been submitted by your teams.");
+      return;
+    }
+
+    const teamMap = new Map(teams.map(team => [team.id, team.name]));
+    const tournamentMap = new Map(tournaments.map(item => [item.id, item.name]));
+
+    registrations.forEach(registration => {
+      const row = document.createElement("tr");
+      addCell(row, teamMap.get(registration.team_id) || "Team");
+      addCell(row, tournamentMap.get(registration.tournament_id) || "Tournament");
+
+      const statusCell = document.createElement("td");
+      const badge = document.createElement("span");
+      badge.className = "status" + (registration.status === "approved" ? "" : " neutral");
+      badge.textContent = pretty(registration.status);
+      statusCell.appendChild(badge);
+      row.appendChild(statusCell);
+
+      addCell(row, formatDate(registration.registered_at));
+      body.appendChild(row);
+    });
+  }
+
+  function renderMembers() {
+    const body = $("memberTableBody");
+    body.replaceChildren();
+
+    if (!members.length) {
+      emptyRow("memberTableBody", 4, "No squad membership records are available yet.");
+      return;
+    }
+
+    const teamMap = new Map(teams.map(team => [team.id, team.name]));
+
+    members.forEach(member => {
+      const row = document.createElement("tr");
+      addCell(row, teamMap.get(member.team_id) || "Team");
+
+      // Names and email addresses are not exposed by the current
+      // team_members schema. Show an account reference instead.
+      const userId = member.user_id || "";
+      addCell(row, userId ? userId.slice(0, 8) + "…" : "Account");
+
+      addCell(row, pretty(member.member_role));
+      addCell(row, member.jersey_number == null ? "—" : String(member.jersey_number));
+
+      body.appendChild(row);
+    });
+  }
+
+  $("teamSearch").addEventListener("input", renderTeams);
+
+  async function init() {
+    if (!window.supabase) {
+      notify("Supabase could not load. Check your internet connection and refresh.", true);
+      return;
+    }
+
+    db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const { data, error } = await db.auth.getSession();
+
+    if (error || !data.session) {
+      window.location.replace("index.html#login");
+      return;
+    }
+
+    currentUser = data.session.user;
+
+    db.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT" || !session) {
+        window.location.replace("index.html#login");
+      }
+    });
+
+    await loadProfile();
+    await loadAllData();
+  }
+
+  init();
+})();
+</script>
+
+</body>
+</html>

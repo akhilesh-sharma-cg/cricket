@@ -1,0 +1,1155 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080d0a">
+<title>Live Scoring | WICKETRA</title>
+<meta name="description" content="Live cricket scoring and match management with WICKETRA.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root {
+--bg:#080d0a;--panel:#101813;--panel2:#141f17;
+--border:rgba(255,255,255,.08);--green:#22c55e;
+--green-soft:rgba(34,197,94,.12);--text:#edf5ef;
+--muted:#84958a;--red:#f87171;--yellow:#facc15;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:"DM Sans",sans-serif;min-height:100vh}
+button,input,select{font:inherit}
+button{cursor:pointer}
+a{text-decoration:none;color:inherit}
+.green{color:var(--green)}
+.layout{min-height:100vh}
+.sidebar{position:fixed;inset:0 auto 0 0;width:250px;padding:28px 18px;background:#0b120d;border-right:1px solid var(--border);z-index:20;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:11px;padding:0 12px;margin-bottom:38px;font-family:"Barlow Condensed",sans-serif;font-size:27px;font-weight:800;letter-spacing:1px}
+.brand-mark{width:27px;height:27px;display:flex;align-items:end;gap:3px}
+.brand-mark span{display:block;width:6px;background:var(--green);border-radius:5px;transform:skew(-18deg)}
+.brand-mark span:nth-child(1){height:13px}
+.brand-mark span:nth-child(2){height:21px}
+.brand-mark span:nth-child(3){height:17px}
+.nav-label{color:#627268;font-size:10px;font-weight:700;letter-spacing:2px;padding:0 13px;margin-bottom:12px}
+.side-nav{display:grid;gap:6px}
+.side-nav a,.sidebar-bottom a{display:flex;align-items:center;gap:12px;padding:12px 13px;color:#91a096;border-radius:9px;font-size:13px;transition:.2s}
+.side-nav a:hover,.side-nav a.active{color:var(--green);background:var(--green-soft)}
+.nav-icon{width:20px;text-align:center}
+.sidebar-bottom{margin-top:auto;border-top:1px solid var(--border);padding-top:18px}
+.main{margin-left:250px;padding:35px 4%;max-width:1750px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:30px}
+.breadcrumb{color:var(--muted);font-size:12px;margin-bottom:7px}
+.page-title{font-family:"Barlow Condensed",sans-serif;font-size:clamp(34px,4vw,48px);line-height:1}
+.page-subtitle{color:var(--muted);font-size:13px;margin-top:9px}
+.account{display:flex;align-items:center;gap:11px;padding:9px 13px;background:var(--panel);border:1px solid var(--border);border-radius:12px}
+.avatar{width:35px;height:35px;display:grid;place-items:center;background:var(--green-soft);color:var(--green);border-radius:50%;font-weight:700}
+.account small{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.match-header{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:20px;background:linear-gradient(120deg,#14251a,#101813 65%);border:1px solid rgba(34,197,94,.2);border-radius:15px;margin-bottom:22px}
+.match-header h2{font-family:"Barlow Condensed",sans-serif;font-size:25px;margin-bottom:5px}
+.match-header p{color:var(--muted);font-size:12px}
+.match-status{display:inline-flex;align-items:center;gap:7px;padding:8px 11px;color:var(--yellow);background:rgba(250,204,21,.08);border:1px solid rgba(250,204,21,.2);border-radius:30px;font-size:10px;font-weight:700}
+.match-status span{width:7px;height:7px;background:currentColor;border-radius:50%}
+.score-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,.8fr);gap:20px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:21px;margin-bottom:20px;min-width:0}
+.panel-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px}
+.panel-title h3{font-family:"Barlow Condensed",sans-serif;font-size:23px}
+.muted{color:var(--muted);font-size:11px}
+.scoreboard{padding:25px;background:linear-gradient(135deg,#14271a,#0d160f);border:1px solid rgba(34,197,94,.18);border-radius:13px;margin-bottom:20px}
+.batting-team{color:#b6c5ba;font-size:12px;font-weight:700;letter-spacing:1px}
+.score{font-family:"Barlow Condensed",sans-serif;font-size:clamp(52px,8vw,78px);line-height:1;margin:12px 0 9px}
+.score small{color:#8da092;font-size:29px}
+.score-details{display:flex;flex-wrap:wrap;gap:20px;color:#9eafa3;font-size:11px}
+.score-details strong{color:var(--text)}
+.players{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.player-card{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:14px}
+.player-card small{display:block;color:var(--muted);font-size:10px;margin-bottom:7px}
+.player-card strong{display:block;font-size:13px;margin-bottom:5px;overflow-wrap:anywhere}
+.player-card span{color:var(--green);font-size:11px}
+.over-label{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:11px;margin-bottom:10px}
+.balls{display:flex;flex-wrap:wrap;gap:8px;min-height:35px}
+.ball{width:31px;height:31px;display:grid;place-items:center;border-radius:50%;border:1px solid var(--border);background:#19231c;color:var(--text);font-size:11px;font-weight:700}
+.ball.boundary{color:var(--green);border-color:rgba(34,197,94,.4)}
+.ball.wicket{color:var(--red);border-color:rgba(248,113,113,.4)}
+.score-buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.score-btn{min-height:58px;border:1px solid var(--border);border-radius:10px;background:var(--panel2);color:var(--text);font-size:20px;font-weight:800;transition:.2s}
+.score-btn:hover{border-color:var(--green);background:var(--green-soft);color:var(--green)}
+.score-btn.extra{font-size:12px;color:#b5c4b9}
+.score-btn.wicket{color:var(--red);border-color:rgba(248,113,113,.2)}
+.score-btn:disabled,.operation-btn:disabled{opacity:.4;cursor:not-allowed}
+.operations{display:flex;flex-wrap:wrap;gap:9px;margin-top:15px}
+.operation-btn{border:1px solid var(--border);background:#18231b;color:var(--text);padding:11px 13px;border-radius:8px;font-size:11px;font-weight:700}
+.operation-btn:hover{border-color:var(--green)}
+.operation-btn.danger{color:var(--red)}
+.commentary-item{padding:13px 0;border-bottom:1px solid var(--border)}
+.commentary-item small{display:block;color:var(--green);font-size:10px;margin-bottom:6px}
+.commentary-item p{color:#bac8bd;font-size:12px;line-height:1.7}
+.commentary-empty{padding:18px 0;color:var(--muted);font-size:12px;line-height:1.8}
+.suggestion{padding:14px;background:rgba(250,204,21,.05);border:1px solid rgba(250,204,21,.17);border-radius:10px;color:#b9c4bb;font-size:11px;line-height:1.7}
+.suggestion strong{color:var(--yellow)}
+.notice{padding:13px;background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);border-radius:9px;color:#a9b8ad;font-size:11px;line-height:1.7;margin-top:14px}
+.setup-input{display:block;width:100%;padding:12px;margin:8px 0 15px;background:#18231b;color:white;border:1px solid var(--border);border-radius:8px}
+.setup-input option{background:#101813}
+.setup-input:focus{outline:1px solid var(--green)}
+.setup-label{display:block;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:1px}
+.toast{position:fixed;right:20px;bottom:20px;max-width:380px;padding:13px 17px;background:#17231a;color:var(--text);border:1px solid rgba(34,197,94,.35);border-radius:9px;box-shadow:0 15px 45px rgba(0,0,0,.4);font-size:12px;z-index:50;display:none}
+.toast.show{display:block}
+.menu-button{display:none;width:40px;height:40px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:8px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:350px;font-size:11px}
+th,td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--border)}
+th{color:var(--muted);font-weight:600}
+td{color:#dce8df}
+.empty-state{padding:20px 0;color:var(--muted);font-size:12px}
+[hidden]{display:none!important}
+@media(max-width:1100px){.score-layout{grid-template-columns:1fr}}
+@media(max-width:760px){
+.sidebar{width:270px;transform:translateX(-100%);transition:transform .25s}
+.sidebar.open{transform:translateX(0)}
+.main{margin-left:0;padding:24px 5%}
+.menu-button{display:grid;place-items:center}
+.account{display:none}
+.topbar{align-items:flex-start}
+}
+@media(max-width:450px){
+.players{grid-template-columns:1fr}
+.score-buttons{gap:7px}
+.score-btn{min-height:51px}
+.match-header{align-items:flex-start;flex-direction:column}
+.panel{padding:16px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important}}
+</style>
+</head>
+
+<body>
+<div class="layout">
+<aside class="sidebar" id="sidebar">
+<a href="index.html" class="brand">
+<span class="brand-mark"><span></span><span></span><span></span></span>
+<span>WICKET<span class="green">RA</span></span>
+</a>
+<div class="nav-label">WORKSPACE</div>
+<nav class="side-nav">
+<a href="dashboard.html"><span class="nav-icon">⌂</span> Overview</a>
+<a href="tournaments.html"><span class="nav-icon">▦</span> Tournaments</a>
+<a href="teams.html"><span class="nav-icon">♟</span> Teams &amp; Players</a>
+<a href="fixtures.html"><span class="nav-icon">▤</span> Fixtures</a>
+<a href="live-scoring.html" class="active"><span class="nav-icon">◉</span> Live Scoring</a>
+<a href="points-table.html"><span class="nav-icon">▥</span> Points &amp; Rankings</a>
+<a href="notifications.html"><span class="nav-icon">♢</span> Notifications</a>
+<a href="reports.html"><span class="nav-icon">▧</span> Match Reports</a>
+</nav>
+<div class="sidebar-bottom"><a href="index.html">← Visit Website</a></div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+<div>
+<button class="menu-button" id="menuButton" type="button">☰</button>
+<div class="breadcrumb">Workspace / Live Scoring</div>
+<h1 class="page-title">LIVE <span class="green">SCORING.</span></h1>
+<p class="page-subtitle">Manage match scoring, ball events and live statistics.</p>
+</div>
+<div class="account">
+<div class="avatar" id="accountAvatar">W</div>
+<div><strong id="accountName" style="font-size:12px">WICKETRA</strong><small id="accountEmail">Checking session...</small></div>
+</div>
+</header>
+
+<section class="match-header">
+<div>
+<h2 id="matchHeading">SELECT A MATCH TO BEGIN</h2>
+<p id="matchDescription">Choose an authorized match before scoring.</p>
+</div>
+<span class="match-status" id="matchStatus"><span></span> NOT CONNECTED</span>
+</section>
+
+<section class="panel">
+<div class="panel-title">
+<h3>SUPABASE &amp; MATCH SETUP</h3>
+<span class="muted" id="connectionStatus">Connecting...</span>
+</div>
+
+<div id="matchArea" hidden>
+<label class="setup-label" for="matchSelect">SELECT MATCH</label>
+<select class="setup-input" id="matchSelect">
+<option value="">Loading matches...</option>
+</select>
+
+<div id="setupArea" hidden>
+<label class="setup-label" for="inningsNumber">INNINGS NUMBER</label>
+<select class="setup-input" id="inningsNumber">
+<option value="1">First innings</option>
+<option value="2">Second innings</option>
+<option value="3">Third innings</option>
+<option value="4">Fourth innings</option>
+</select>
+
+<label class="setup-label" for="battingTeam">BATTING TEAM</label>
+<select class="setup-input" id="battingTeam"></select>
+
+<label class="setup-label" for="strikerSelect">STRIKER</label>
+<select class="setup-input" id="strikerSelect"></select>
+
+<label class="setup-label" for="nonStrikerSelect">NON-STRIKER</label>
+<select class="setup-input" id="nonStrikerSelect"></select>
+
+<label class="setup-label" for="bowlerSelect">OPENING BOWLER</label>
+<select class="setup-input" id="bowlerSelect"></select>
+
+<label class="setup-label" for="targetRuns">TARGET (OPTIONAL)</label>
+<input class="setup-input" id="targetRuns" type="number" min="1" placeholder="Leave blank for first innings">
+
+<button class="operation-btn" id="startInningsButton" type="button">START INNINGS</button>
+</div>
+
+<div id="existingArea" hidden>
+<label class="setup-label" for="existingInnings">EXISTING INNINGS</label>
+<select class="setup-input" id="existingInnings"></select>
+<button class="operation-btn" id="loadInningsButton" type="button">LOAD INNINGS</button>
+</div>
+</div>
+</section>
+
+<div class="score-layout">
+<div>
+<section class="panel">
+<div class="panel-title">
+<h3>LIVE SCOREBOARD</h3>
+<span class="muted" id="scoreState">Waiting for match data</span>
+</div>
+<div class="scoreboard">
+<div class="batting-team" id="battingTeamName">BATTING TEAM</div>
+<div class="score" id="mainScore">— <small>/ —</small></div>
+<div class="score-details">
+<span>Overs: <strong id="oversValue">—</strong></span>
+<span>Run rate: <strong id="runRateValue">—</strong></span>
+<span>Target: <strong id="targetValue">—</strong></span>
+<span>Extras: <strong id="extrasValue">—</strong></span>
+</div>
+</div>
+
+<div class="players">
+<div class="player-card">
+<small>STRIKER *</small>
+<strong id="strikerName">Waiting for innings setup</strong>
+<span id="strikerStats">— runs · — balls</span>
+</div>
+<div class="player-card">
+<small>NON-STRIKER</small>
+<strong id="nonStrikerName">Waiting for innings setup</strong>
+<span id="nonStrikerStats">— runs · — balls</span>
+</div>
+</div>
+
+<div class="player-card" style="margin-bottom:18px">
+<small>CURRENT BOWLER</small>
+<strong id="bowlerName">Waiting for innings setup</strong>
+<span id="bowlerStats">— overs · — wickets · — runs</span>
+</div>
+
+<div class="over-label">
+<span>THIS OVER</span>
+<span id="overCount">— legal balls</span>
+</div>
+<div class="balls" id="ballHistory">
+<span class="muted">Ball-by-ball details will appear here.</span>
+</div>
+</section>
+
+<section class="panel">
+<div class="panel-title">
+<h3>SCORING CONTROLS</h3>
+<span class="muted">Authorized scorer only</span>
+</div>
+<p class="muted" style="margin-bottom:15px;line-height:1.7">
+Select a match and start an innings before recording deliveries.
+</p>
+<div class="score-buttons" id="scoringButtons">
+<button class="score-btn" data-runs="0" disabled>0</button>
+<button class="score-btn" data-runs="1" disabled>1</button>
+<button class="score-btn" data-runs="2" disabled>2</button>
+<button class="score-btn" data-runs="3" disabled>3</button>
+<button class="score-btn" data-runs="4" disabled>4</button>
+<button class="score-btn" data-runs="5" disabled>5</button>
+<button class="score-btn" data-runs="6" disabled>6</button>
+<button class="score-btn wicket" data-kind="wicket" disabled>W</button>
+<button class="score-btn extra" data-kind="wide" disabled>WIDE</button>
+<button class="score-btn extra" data-kind="no_ball" disabled>NO BALL</button>
+<button class="score-btn extra" data-kind="bye" disabled>BYE</button>
+<button class="score-btn extra" data-kind="leg_bye" disabled>LEG BYE</button>
+</div>
+<div class="operations">
+<button class="operation-btn" id="nextBowlerButton" type="button" disabled>NEXT BOWLER</button>
+</div>
+<div class="notice">
+<strong>Scoring rules:</strong> Deliveries are recorded through the Supabase scoring function. Strike rotation and legal-ball progression are handled by the database function. After a wicket, the scorer selects the incoming batter.
+</div>
+</section>
+
+<section class="panel">
+<div class="panel-title"><h3>BATTING SCORECARD</h3></div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>BATTER ID</th><th>RUNS</th><th>BALLS</th><th>4s</th><th>6s</th><th>SR</th></tr></thead>
+<tbody id="battingScorecard"><tr><td colspan="6" class="empty-state">No scorecard available.</td></tr></tbody>
+</table>
+</div>
+</section>
+
+<section class="panel">
+<div class="panel-title"><h3>BOWLING SCORECARD</h3></div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>BOWLER ID</th><th>OVERS</th><th>MAIDENS</th><th>RUNS</th><th>WICKETS</th><th>ECON</th></tr></thead>
+<tbody id="bowlingScorecard"><tr><td colspan="6" class="empty-state">No scorecard available.</td></tr></tbody>
+</table>
+</div>
+</section>
+</div>
+
+<div>
+<section class="panel">
+<div class="panel-title"><h3>AUTO COMMENTARY</h3><span class="muted">Ball-by-ball</span></div>
+<div id="commentaryArea" class="commentary-empty">Commentary will appear after scoring events are recorded.</div>
+</section>
+<section class="panel">
+<div class="panel-title"><h3>BOWLER CHANGE</h3></div>
+<div class="suggestion" id="bowlerSuggestion">
+<strong>Waiting for over completion.</strong><br>
+A new bowler can be selected after the database marks the over complete.
+</div>
+<select class="setup-input" id="nextBowlerSelect" hidden></select>
+</section>
+<section class="panel">
+<div class="panel-title"><h3>SCORING STATUS</h3></div>
+<div class="notice" id="scoringStatus">Checking your WICKETRA session.</div>
+</section>
+</div>
+</div>
+</main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const SUPABASE_URL = "https://ywehjzrajdokbzvvnsfk.supabase.co";
+const SUPABASE_KEY = "sb_publishable_TXW4VKa-8hdrigWVzju6bA_5fQh19nj";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const $ = id => document.getElementById(id);
+
+let currentUser = null;
+let currentMatch = null;
+let currentInnings = null;
+let liveState = null;
+let team1 = null;
+let team2 = null;
+let realtimeChannel = null;
+let isSaving = false;
+let refreshRunning = false;
+
+function showMessage(message) {
+    $("toast").textContent = message;
+    $("toast").classList.add("show");
+    clearTimeout(window.wicketraToastTimer);
+    window.wicketraToastTimer = setTimeout(() => {
+        $("toast").classList.remove("show");
+    }, 4000);
+}
+
+function setConnection(message) {
+    $("connectionStatus").textContent = message;
+}
+
+function setScoringEnabled(enabled) {
+    document.querySelectorAll("#scoringButtons button").forEach(button => {
+        button.disabled = !enabled;
+    });
+}
+
+function setMatchStatus(message, color) {
+    const status = $("matchStatus");
+    status.lastChild.textContent = " " + message;
+    status.style.color = color || "var(--yellow)";
+}
+
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    })[char]);
+}
+
+$("menuButton").addEventListener("click", () => {
+    $("sidebar").classList.toggle("open");
+});
+
+document.addEventListener("click", event => {
+    if (window.innerWidth <= 760 &&
+        !$("sidebar").contains(event.target) &&
+        !$("menuButton").contains(event.target)) {
+        $("sidebar").classList.remove("open");
+    }
+});
+
+/* AUTH: use the homepage login, not a second login form */
+async function initializeWicketra() {
+    try {
+        setConnection("Checking session...");
+        const { data, error } = await db.auth.getSession();
+        if (error) throw error;
+
+        if (!data.session) {
+            location.replace("index.html#login");
+            return;
+        }
+
+        currentUser = data.session.user;
+        await afterLogin();
+    } catch (error) {
+        setConnection("Connection failed");
+        $("scoringStatus").textContent = error.message;
+        showMessage(error.message);
+    }
+}
+
+db.auth.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_OUT") {
+        location.replace("index.html#login");
+    } else if (event === "TOKEN_REFRESHED" && session) {
+        currentUser = session.user;
+    }
+});
+
+async function afterLogin() {
+    $("matchArea").hidden = false;
+    $("accountName").textContent =
+        currentUser.user_metadata?.full_name ||
+        currentUser.email?.split("@")[0] || "WICKETRA USER";
+    $("accountEmail").textContent = currentUser.email || "";
+    $("accountAvatar").textContent =
+        (currentUser.email || "W").charAt(0).toUpperCase();
+
+    setConnection("Supabase connected");
+    $("scoringStatus").textContent = "Signed in. Loading accessible matches.";
+    await loadMatches();
+}
+
+/* MATCHES */
+async function loadMatches() {
+    const select = $("matchSelect");
+    select.innerHTML = '<option value="">Loading matches...</option>';
+
+    const { data, error } = await db
+        .from("matches")
+        .select("id,tournament_id,match_number,match_title,stage,round_name,team1_id,team2_id,scheduled_at,venue,status")
+        .in("status", ["scheduled", "live"])
+        .order("scheduled_at", { ascending: true });
+
+    if (error) {
+        select.innerHTML = '<option value="">Could not load matches</option>';
+        $("scoringStatus").textContent = error.message;
+        showMessage("Match loading failed: " + error.message);
+        return;
+    }
+
+    if (!data?.length) {
+        select.innerHTML = '<option value="">No accessible scheduled or live matches</option>';
+        $("scoringStatus").textContent =
+            "No matches are visible to this account. Check match creation and Supabase permissions.";
+        return;
+    }
+
+    const tournamentIds = [...new Set(data.map(m => m.tournament_id))];
+    const teamIds = [...new Set(data.flatMap(m => [m.team1_id, m.team2_id]).filter(Boolean))];
+
+    const [tournamentResult, teamResult] = await Promise.all([
+        db.from("tournaments").select("id,name").in("id", tournamentIds),
+        db.from("teams").select("id,name,short_name").in("id", teamIds)
+    ]);
+
+    const tournaments = new Map((tournamentResult.data || []).map(x => [x.id, x.name]));
+    const teams = new Map((teamResult.data || []).map(x => [x.id, x.short_name || x.name]));
+
+    select.innerHTML = '<option value="">Choose a match</option>';
+
+    data.forEach(match => {
+        const option = document.createElement("option");
+        option.value = match.id;
+        const home = teams.get(match.team1_id) || "TBD";
+        const away = teams.get(match.team2_id) || "TBD";
+        const tournament = tournaments.get(match.tournament_id) || "Tournament";
+        option.textContent =
+            `${tournament} | ${home} vs ${away} | Match ${match.match_number ?? "—"}`;
+        select.appendChild(option);
+    });
+
+    $("scoringStatus").textContent =
+        `${data.length} accessible match(es) loaded from Supabase.`;
+}
+
+$("matchSelect").addEventListener("change", async () => {
+    const matchId = $("matchSelect").value;
+    currentMatch = null;
+    currentInnings = null;
+    liveState = null;
+    setScoringEnabled(false);
+    $("setupArea").hidden = true;
+    $("existingArea").hidden = true;
+
+    if (realtimeChannel) {
+        await db.removeChannel(realtimeChannel);
+        realtimeChannel = null;
+    }
+    if (!matchId) return;
+
+    const { data, error } = await db
+        .from("matches")
+        .select("*")
+        .eq("id", matchId)
+        .single();
+
+    if (error) {
+        showMessage("Could not open match: " + error.message);
+        return;
+    }
+
+    currentMatch = data;
+    [team1, team2] = await Promise.all([
+        getTeam(data.team1_id),
+        getTeam(data.team2_id)
+    ]);
+
+    $("matchHeading").textContent =
+        `${team1?.name || "TBD"} VS ${team2?.name || "TBD"}`;
+    $("matchDescription").textContent =
+        `Match ${data.match_number ?? "—"} · ${data.stage || "Tournament match"} · ${data.venue || "Venue not specified"}`;
+    setMatchStatus((data.status || "unknown").toUpperCase());
+
+    await loadExistingInnings();
+});
+
+async function getTeam(id) {
+    if (!id) return null;
+    const { data, error } = await db.from("teams")
+        .select("id,name,short_name").eq("id", id).single();
+    return error ? null : data;
+}
+
+/* INNINGS SETUP */
+async function loadExistingInnings() {
+    const { data, error } = await db.from("innings")
+        .select("*").eq("match_id", currentMatch.id)
+        .order("innings_number");
+
+    if (error) {
+        showMessage("Could not load innings: " + error.message);
+        $("scoringStatus").textContent = error.message;
+        return;
+    }
+
+    if (data?.length) {
+        $("existingArea").hidden = false;
+        $("setupArea").hidden = true;
+        $("existingInnings").innerHTML = "";
+
+        data.forEach(innings => {
+            const option = document.createElement("option");
+            option.value = innings.id;
+            option.textContent =
+                `Innings ${innings.innings_number} · ${innings.status}`;
+            $("existingInnings").appendChild(option);
+        });
+
+        $("scoringStatus").textContent =
+            "Existing innings found. Select an innings to load it.";
+    } else {
+        $("setupArea").hidden = false;
+        $("existingArea").hidden = true;
+        await prepareTeamSelection();
+    }
+}
+
+async function prepareTeamSelection() {
+    $("battingTeam").innerHTML = "";
+    [team1, team2].filter(Boolean).forEach(team => {
+        const option = document.createElement("option");
+        option.value = team.id;
+        option.textContent = team.name;
+        $("battingTeam").appendChild(option);
+    });
+    await loadMembers();
+}
+
+$("battingTeam").addEventListener("change", loadMembers);
+
+async function loadMembers() {
+    const battingId = $("battingTeam").value;
+    if (!battingId || !currentMatch) return;
+
+    const bowlingId = battingId === currentMatch.team1_id
+        ? currentMatch.team2_id : currentMatch.team1_id;
+
+    const battingPlayers = await getPlayerOptions(battingId);
+    const bowlingPlayers = await getPlayerOptions(bowlingId);
+
+    fillPlayerSelect("strikerSelect", battingPlayers);
+    fillPlayerSelect("nonStrikerSelect", battingPlayers);
+    fillPlayerSelect("bowlerSelect", bowlingPlayers);
+
+    if (battingPlayers.length < 2 || bowlingPlayers.length < 1) {
+        showMessage("At least two batting-team members and one bowling-team member are required.");
+    }
+}
+
+async function getPlayerOptions(teamId) {
+    const { data, error } = await db.from("team_members")
+        .select("user_id,member_role").eq("team_id", teamId);
+
+    if (error) {
+        showMessage("Player loading failed: " + error.message);
+        return [];
+    }
+
+    return (data || []).map(member => ({
+        id: member.user_id,
+        label: `${member.member_role || "Player"} · ${member.user_id.slice(0, 8)}`
+    }));
+}
+
+function fillPlayerSelect(id, players) {
+    const select = $(id);
+    select.innerHTML = '<option value="">Select player</option>';
+    players.forEach(player => {
+        const option = document.createElement("option");
+        option.value = player.id;
+        option.textContent = player.label;
+        select.appendChild(option);
+    });
+}
+
+/* START INNINGS */
+$("startInningsButton").addEventListener("click", async () => {
+    if (!currentMatch) return;
+
+    const battingTeamId = $("battingTeam").value;
+    const bowlingTeamId = battingTeamId === currentMatch.team1_id
+        ? currentMatch.team2_id : currentMatch.team1_id;
+    const striker = $("strikerSelect").value;
+    const nonStriker = $("nonStrikerSelect").value;
+    const bowler = $("bowlerSelect").value;
+    const targetInput = $("targetRuns").value;
+
+    if (!battingTeamId || !striker || !nonStriker || !bowler) {
+        showMessage("Complete all innings setup selections.");
+        return;
+    }
+    if (striker === nonStriker) {
+        showMessage("Choose two different batters.");
+        return;
+    }
+
+    const target = targetInput ? Number(targetInput) : null;
+    if (target !== null && (!Number.isInteger(target) || target <= 0)) {
+        showMessage("Enter a valid target.");
+        return;
+    }
+
+    const button = $("startInningsButton");
+    button.disabled = true;
+    button.textContent = "STARTING...";
+
+    const { data, error } = await db.rpc("start_match_innings", {
+        p_match_id: currentMatch.id,
+        p_innings_number: Number($("inningsNumber").value),
+        p_batting_team_id: battingTeamId,
+        p_bowling_team_id: bowlingTeamId,
+        p_striker_id: striker,
+        p_non_striker_id: nonStriker,
+        p_bowler_id: bowler,
+        p_target_runs: target
+    });
+
+    button.disabled = false;
+    button.textContent = "START INNINGS";
+
+    if (error) {
+        showMessage("Innings setup failed: " + error.message);
+        return;
+    }
+
+    showMessage("Innings started.");
+    await loadInnings(data);
+});
+
+$("loadInningsButton").addEventListener("click", async () => {
+    const id = $("existingInnings").value;
+    if (id) await loadInnings(id);
+});
+
+async function loadInnings(id) {
+    const [inningsResult, stateResult] = await Promise.all([
+        db.from("innings").select("*").eq("id", id).single(),
+        db.from("match_live_state").select("*").eq("innings_id", id).single()
+    ]);
+
+    if (inningsResult.error) {
+        showMessage(inningsResult.error.message);
+        return;
+    }
+    if (stateResult.error) {
+        showMessage("Live state could not be loaded: " + stateResult.error.message);
+        return;
+    }
+
+    currentInnings = inningsResult.data;
+    liveState = stateResult.data;
+
+    $("setupArea").hidden = true;
+    $("existingArea").hidden = true;
+    setScoringEnabled(currentInnings.status === "in_progress" && !liveState.over_completed);
+    await refreshScoreboard();
+    subscribeToLiveUpdates();
+    $("scoringStatus").textContent = "Innings loaded from Supabase.";
+}
+
+/* SCOREBOARD */
+async function refreshScoreboard() {
+    if (!currentInnings || refreshRunning) return;
+    refreshRunning = true;
+
+    try {
+        const { data: innings, error } = await db.from("innings")
+            .select("*").eq("id", currentInnings.id).single();
+
+        if (error) throw error;
+        currentInnings = innings;
+
+        const { data: state, error: stateError } = await db.from("match_live_state")
+            .select("*").eq("innings_id", currentInnings.id).single();
+
+        if (stateError) throw stateError;
+        liveState = state;
+
+        const overs = Math.floor(innings.legal_balls / 6);
+        const balls = innings.legal_balls % 6;
+        const runRate = innings.legal_balls
+            ? (innings.total_runs / (innings.legal_balls / 6)).toFixed(2)
+            : "0.00";
+
+        $("mainScore").innerHTML =
+            `${innings.total_runs} <small>/ ${innings.wickets}</small>`;
+        $("battingTeamName").textContent =
+            await getTeamName(innings.batting_team_id);
+        $("oversValue").textContent = `${overs}.${balls}`;
+        $("runRateValue").textContent = runRate;
+        $("targetValue").textContent = innings.target ?? "—";
+        $("extrasValue").textContent = innings.extras ?? "—";
+        $("scoreState").textContent = String(innings.status || "").toUpperCase();
+        $("overCount").textContent = `${innings.legal_balls} legal balls`;
+
+        $("strikerName").textContent =
+            "Player " + (liveState.striker_id || "").slice(0, 8);
+        $("nonStrikerName").textContent =
+            "Player " + (liveState.non_striker_id || "").slice(0, 8);
+        $("bowlerName").textContent =
+            "Player " + (liveState.current_bowler_id || "").slice(0, 8);
+
+        $("bowlerSuggestion").innerHTML = liveState.over_completed
+            ? "<strong>Over completed.</strong><br>Select the next bowler below."
+            : "<strong>Bowler active.</strong><br>Next bowler selection becomes available when the database marks the over complete.";
+
+        $("nextBowlerButton").disabled = !liveState.over_completed;
+        $("nextBowlerSelect").hidden = !liveState.over_completed;
+
+        if (liveState.over_completed) await loadNextBowlerOptions();
+
+        setScoringEnabled(
+            innings.status === "in_progress" &&
+            !liveState.over_completed &&
+            !isSaving
+        );
+
+        await loadDeliveryHistory();
+        await loadScorecards();
+    } catch (error) {
+        showMessage("Scoreboard refresh failed: " + error.message);
+    } finally {
+        refreshRunning = false;
+    }
+}
+
+async function getTeamName(id) {
+    const { data } = await db.from("teams").select("name").eq("id", id).single();
+    return data?.name || "Team";
+}
+
+/* DELIVERY HISTORY */
+async function loadDeliveryHistory() {
+    const { data, error } = await db.from("deliveries")
+        .select("*").eq("innings_id", currentInnings.id)
+        .order("delivery_sequence", { ascending: true });
+
+    if (error) {
+        $("ballHistory").innerHTML =
+            '<span class="muted">Delivery history unavailable.</span>';
+        return;
+    }
+
+    const deliveries = data || [];
+    const currentOver = liveState?.current_over ?? 0;
+    const overBalls = deliveries.filter(d => d.over_number === currentOver);
+
+    $("ballHistory").innerHTML = "";
+
+    if (!deliveries.length) {
+        $("ballHistory").innerHTML =
+            '<span class="muted">No deliveries recorded yet.</span>';
+    }
+
+    deliveries.slice(-24).forEach(delivery => {
+        const ball = document.createElement("span");
+        ball.className = "ball";
+        if (delivery.is_wicket) ball.classList.add("wicket");
+        else if ([4,6].includes(delivery.batter_runs)) ball.classList.add("boundary");
+
+        let label = String(delivery.total_runs);
+        if (delivery.is_wicket) label = "W";
+        else if (delivery.delivery_kind === "wide") label = "Wd";
+        else if (delivery.delivery_kind === "no_ball") label = "Nb";
+
+        ball.textContent = label;
+        ball.title =
+            `Over ${delivery.over_number + 1}, delivery ${delivery.ball_number}`;
+        $("ballHistory").appendChild(ball);
+    });
+
+    $("overCount").textContent =
+        `${overBalls.filter(d => d.is_legal_ball).length} legal balls in current over`;
+}
+
+/* SCORECARDS */
+async function loadScorecards() {
+    const [batting, bowling] = await Promise.all([
+        db.from("innings_batting_scorecard").select("*")
+            .eq("innings_id", currentInnings.id),
+        db.from("innings_bowling_scorecard").select("*")
+            .eq("innings_id", currentInnings.id)
+    ]);
+
+    $("battingScorecard").innerHTML = "";
+    $("bowlingScorecard").innerHTML = "";
+
+    if (batting.error || !batting.data?.length) {
+        $("battingScorecard").innerHTML =
+            '<tr><td colspan="6">Batting scorecard unavailable or empty.</td></tr>';
+    } else {
+        batting.data.forEach(row => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${escapeHTML(String(row.batter_id).slice(0,8))}</td>
+                <td>${Number(row.runs ?? 0)}</td>
+                <td>${Number(row.balls_faced ?? 0)}</td>
+                <td>${Number(row.fours ?? 0)}</td>
+                <td>${Number(row.sixes ?? 0)}</td>
+                <td>${escapeHTML(row.strike_rate ?? "—")}</td>`;
+            $("battingScorecard").appendChild(tr);
+        });
+    }
+
+    if (bowling.error || !bowling.data?.length) {
+        $("bowlingScorecard").innerHTML =
+            '<tr><td colspan="6">Bowling scorecard unavailable or empty.</td></tr>';
+    } else {
+        bowling.data.forEach(row => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${escapeHTML(String(row.bowler_id).slice(0,8))}</td>
+                <td>${Number(row.completed_overs ?? 0)}.${Number(row.remaining_balls ?? 0)}</td>
+                <td>${Number(row.maidens ?? 0)}</td>
+                <td>${Number(row.runs_conceded ?? 0)}</td>
+                <td>${Number(row.wickets ?? 0)}</td>
+                <td>${escapeHTML(row.economy ?? "—")}</td>`;
+            $("bowlingScorecard").appendChild(tr);
+        });
+    }
+
+    const strikerRow = batting.data?.find(x => x.batter_id === liveState?.striker_id);
+    const nonStrikerRow = batting.data?.find(x => x.batter_id === liveState?.non_striker_id);
+    const bowlerRow = bowling.data?.find(x => x.bowler_id === liveState?.current_bowler_id);
+
+    $("strikerStats").textContent = strikerRow
+        ? `${strikerRow.runs} runs · ${strikerRow.balls_faced} balls`
+        : "0 runs · 0 balls";
+    $("nonStrikerStats").textContent = nonStrikerRow
+        ? `${nonStrikerRow.runs} runs · ${nonStrikerRow.balls_faced} balls`
+        : "0 runs · 0 balls";
+    $("bowlerStats").textContent = bowlerRow
+        ? `${bowlerRow.completed_overs}.${bowlerRow.remaining_balls} overs · ${bowlerRow.wickets} wickets · ${bowlerRow.runs_conceded} runs`
+        : "0 overs · 0 wickets · 0 runs";
+}
+
+/* SCORING CONTROLS */
+document.querySelectorAll("#scoringButtons button").forEach(button => {
+    button.addEventListener("click", async () => {
+        if (!currentInnings || !liveState || isSaving) return;
+
+        const kind = button.dataset.kind;
+        if (kind === "wicket") return recordWicket();
+        if (["wide","no_ball","bye","leg_bye"].includes(kind)) {
+            return recordExtra(kind);
+        }
+
+        const runs = Number(button.dataset.runs);
+        await recordDelivery({
+            kind:"normal",
+            batterRuns:runs,
+            extraRuns:0,
+            completedRuns:[1,2,3,5].includes(runs) ? runs : 0,
+            isWicket:false
+        });
+    });
+});
+
+async function getNextBallNumber(overNumber) {
+    const { data, error } = await db.from("deliveries")
+        .select("ball_number").eq("innings_id", currentInnings.id)
+        .eq("over_number", overNumber)
+        .order("ball_number", { ascending:false }).limit(1);
+
+    if (error) throw error;
+    return data?.length ? data[0].ball_number + 1 : 1;
+}
+
+async function recordExtra(kind) {
+    let extraRuns = 1;
+    let completedRuns = 0;
+
+    if (kind === "wide" || kind === "no_ball") {
+        const answer = prompt(
+            `Enter total extras for ${kind.replace("_"," ")} (minimum 1):`, "1"
+        );
+        if (answer === null) return;
+        extraRuns = Number(answer);
+        if (!Number.isInteger(extraRuns) || extraRuns < 1 || extraRuns > 7) {
+            showMessage("Enter a valid extras amount from 1 to 7.");
+            return;
+        }
+    } else {
+        const answer = prompt("Enter completed bye or leg-bye runs:", "1");
+        if (answer === null) return;
+        extraRuns = Number(answer);
+        completedRuns = extraRuns;
+        if (!Number.isInteger(extraRuns) || extraRuns < 0 || extraRuns > 6) {
+            showMessage("Enter a valid number from 0 to 6.");
+            return;
+        }
+    }
+
+    await recordDelivery({
+        kind,batterRuns:0,extraRuns,completedRuns,isWicket:false
+    });
+}
+
+async function recordWicket() {
+    const dismissalOptions = [
+        "bowled","caught","lbw","run_out","stumped",
+        "hit_wicket","caught_and_bowled","retired_out",
+        "obstructing_the_field","hit_the_ball_twice"
+    ];
+
+    const dismissal = prompt(
+        "Enter dismissal type:\n" + dismissalOptions.join(", "), "bowled"
+    );
+    if (!dismissal) return;
+    if (!dismissalOptions.includes(dismissal)) {
+        showMessage("Unsupported dismissal type.");
+        return;
+    }
+
+    const dismissed = prompt(
+        "Which batter is out?\n1 = striker\n2 = non-striker", "1"
+    );
+    if (dismissed !== "1" && dismissed !== "2") {
+        showMessage("Choose 1 or 2.");
+        return;
+    }
+
+    const dismissedId = dismissed === "1"
+        ? liveState.striker_id : liveState.non_striker_id;
+
+    const options = await getPlayerOptions(currentInnings.batting_team_id);
+    const available = options.filter(p =>
+        p.id !== liveState.striker_id && p.id !== liveState.non_striker_id
+    );
+
+    if (!available.length) {
+        showMessage("No other registered batting-team player is available.");
+        return;
+    }
+
+    const incomingText = available.map((p,i) =>
+        `${i+1}. ${p.label}`
+    ).join("\n");
+
+    const incomingAnswer = prompt(
+        "Select incoming batter by number:\n" + incomingText, "1"
+    );
+    if (incomingAnswer === null) return;
+
+    const incomingIndex = Number(incomingAnswer) - 1;
+    if (!Number.isInteger(incomingIndex) ||
+        incomingIndex < 0 || incomingIndex >= available.length) {
+        showMessage("Invalid incoming batter selection.");
+        return;
+    }
+
+    const incomingId = available[incomingIndex].id;
+    const nextStriker = dismissedId === liveState.striker_id
+        ? incomingId : liveState.striker_id;
+    const nextNonStriker = dismissedId === liveState.non_striker_id
+        ? incomingId : liveState.non_striker_id;
+
+    await recordDelivery({
+        kind:"normal",
+        batterRuns:0,
+        extraRuns:0,
+        completedRuns:0,
+        isWicket:true,
+        dismissal,
+        dismissedId,
+        nextStriker,
+        nextNonStriker
+    });
+}
+
+async function recordDelivery(event) {
+    if (isSaving || !currentInnings || !liveState) return;
+
+    isSaving = true;
+    setScoringEnabled(false);
+
+    try {
+        const ballNumber = await getNextBallNumber(liveState.current_over);
+
+        const { error } = await db.rpc("add_match_delivery", {
+            p_innings_id:currentInnings.id,
+            p_over_number:liveState.current_over,
+            p_ball_number:ballNumber,
+            p_batter_id:liveState.striker_id,
+            p_non_striker_id:liveState.non_striker_id,
+            p_bowler_id:liveState.current_bowler_id,
+            p_delivery_kind:event.kind,
+            p_batter_runs:event.batterRuns,
+            p_extra_runs:event.extraRuns,
+            p_is_wicket:event.isWicket,
+            p_dismissal:event.dismissal || "none",
+            p_dismissed_player_id:event.dismissedId || null,
+            p_commentary:null,
+            p_completed_runs:event.completedRuns,
+            p_next_striker_id:event.nextStriker || null,
+            p_next_non_striker_id:event.nextNonStriker || null
+        });
+
+        if (error) throw error;
+
+        showMessage("Delivery recorded successfully.");
+        await refreshScoreboard();
+
+        if (liveState?.over_completed) {
+            showMessage("Over completed. Select the next bowler.");
+        }
+    } catch (error) {
+        showMessage("Scoring failed: " + error.message);
+    } finally {
+        isSaving = false;
+        setScoringEnabled(
+            !!currentInnings &&
+            currentInnings.status === "in_progress" &&
+            !liveState?.over_completed
+        );
+    }
+}
+
+/* NEXT BOWLER */
+async function loadNextBowlerOptions() {
+    const select = $("nextBowlerSelect");
+    select.innerHTML = '<option value="">Select next bowler</option>';
+
+    const { data, error } = await db.from("team_members")
+        .select("user_id,member_role")
+        .eq("team_id", currentInnings.bowling_team_id);
+
+    if (error) {
+        showMessage("Could not load bowlers: " + error.message);
+        return;
+    }
+
+    (data || []).forEach(player => {
+        if (player.user_id === liveState.current_bowler_id) return;
+        const option = document.createElement("option");
+        option.value = player.user_id;
+        option.textContent =
+            `${player.member_role || "Player"} · ${player.user_id.slice(0,8)}`;
+        select.appendChild(option);
+    });
+}
+
+$("nextBowlerButton").addEventListener("click", async () => {
+    if (!currentInnings || !liveState?.over_completed) return;
+
+    const bowlerId = $("nextBowlerSelect").value;
+    if (!bowlerId) {
+        showMessage("Select the next bowler first.");
+        return;
+    }
+
+    $("nextBowlerButton").disabled = true;
+
+    const { error } = await db.rpc("select_next_bowler", {
+        p_innings_id:currentInnings.id,
+        p_new_bowler_id:bowlerId
+    });
+
+    if (error) {
+        showMessage("Bowler change failed: " + error.message);
+        $("nextBowlerButton").disabled = false;
+        return;
+    }
+
+    showMessage("Next bowler selected.");
+    await refreshScoreboard();
+});
+
+/* REALTIME */
+function subscribeToLiveUpdates() {
+    if (realtimeChannel) db.removeChannel(realtimeChannel);
+
+    realtimeChannel = db.channel("wicketra-live-" + currentInnings.id)
+        .on("postgres_changes", {
+            event:"*",schema:"public",table:"deliveries",
+            filter:"innings_id=eq." + currentInnings.id
+        }, () => refreshScoreboard())
+        .on("postgres_changes", {
+            event:"UPDATE",schema:"public",table:"innings",
+            filter:"id=eq." + currentInnings.id
+        }, () => refreshScoreboard())
+        .on("postgres_changes", {
+            event:"UPDATE",schema:"public",table:"match_live_state",
+            filter:"innings_id=eq." + currentInnings.id
+        }, () => refreshScoreboard())
+        .subscribe(status => {
+            if (status === "CHANNEL_ERROR") {
+                showMessage("Live updates could not connect. Refresh the page to reload the latest score.");
+            }
+        });
+}
+
+initializeWicketra();
+</script>
+</body>
+</html>

@@ -1,0 +1,902 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080d0a">
+  <title>Fixtures & Scheduling | WICKETRA</title>
+  <meta name="description" content="Generate and manage cricket tournament fixtures with WICKETRA.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --bg:#080d0a;
+      --panel:#101813;
+      --panel2:#141f17;
+      --border:rgba(255,255,255,.08);
+      --green:#22c55e;
+      --green-soft:rgba(34,197,94,.12);
+      --text:#edf5ef;
+      --muted:#84958a;
+      --red:#f87171;
+      --yellow:#facc15;
+    }
+
+    * {box-sizing:border-box;margin:0;padding:0}
+    body {background:var(--bg);color:var(--text);font-family:"DM Sans",sans-serif;min-height:100vh}
+    button,input,select {font:inherit}
+    a {color:inherit;text-decoration:none}
+    button:disabled {opacity:.5;cursor:not-allowed}
+
+    .sidebar {
+      position:fixed;inset:0 auto 0 0;width:250px;padding:28px 18px;
+      background:#0b120d;border-right:1px solid var(--border);z-index:20;
+      display:flex;flex-direction:column;
+    }
+    .brand {
+      display:flex;align-items:center;gap:11px;padding:0 12px;margin-bottom:38px;
+      font-family:"Barlow Condensed",sans-serif;font-size:27px;font-weight:800;letter-spacing:1px;
+    }
+    .brand-mark {width:27px;height:27px;display:flex;align-items:end;gap:3px}
+    .brand-mark span {display:block;width:6px;background:var(--green);border-radius:5px;transform:skew(-18deg)}
+    .brand-mark span:nth-child(1){height:13px}
+    .brand-mark span:nth-child(2){height:21px}
+    .brand-mark span:nth-child(3){height:17px}
+    .green {color:var(--green)}
+    .nav-label {color:#627268;font-size:10px;font-weight:700;letter-spacing:2px;padding:0 13px;margin-bottom:12px}
+    .side-nav {display:grid;gap:6px}
+    .side-nav a {
+      display:flex;align-items:center;gap:12px;padding:12px 13px;color:#91a096;
+      border-radius:9px;font-size:13px;transition:.2s;
+    }
+    .side-nav a:hover,.side-nav a.active {color:var(--green);background:var(--green-soft)}
+    .nav-icon {width:20px;text-align:center;font-size:16px}
+    .sidebar-bottom {margin-top:auto;border-top:1px solid var(--border);padding-top:18px}
+    .sidebar-bottom a {display:block;padding:11px 13px;color:var(--muted);font-size:13px}
+
+    .main {margin-left:250px;padding:35px 4.5%;max-width:1700px}
+    .topbar {display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:35px}
+    .breadcrumb {color:var(--muted);font-size:12px;margin-bottom:7px}
+    .page-title {font-family:"Barlow Condensed",sans-serif;font-size:clamp(34px,4vw,48px);line-height:1;letter-spacing:.5px}
+    .page-subtitle {color:var(--muted);font-size:13px;margin-top:9px}
+    .account {display:flex;align-items:center;gap:11px;padding:9px 13px;background:var(--panel);border:1px solid var(--border);border-radius:12px}
+    .avatar {width:35px;height:35px;display:grid;place-items:center;background:var(--green-soft);color:var(--green);border-radius:50%;font-weight:700}
+    .account small {display:block;color:var(--muted);font-size:10px;margin-top:3px}
+
+    .section-heading {display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:17px}
+    .section-heading h2 {font-family:"Barlow Condensed",sans-serif;font-size:25px;letter-spacing:.4px}
+    .section-heading p {color:var(--muted);font-size:12px;margin-top:4px}
+    .panel {background:var(--panel);border:1px solid var(--border);border-radius:15px;padding:24px;margin-bottom:25px}
+
+    .info-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:28px}
+    .info-card {padding:19px;background:var(--panel);border:1px solid var(--border);border-radius:12px}
+    .info-card strong {display:block;font-family:"Barlow Condensed",sans-serif;font-size:22px;margin-bottom:6px}
+    .info-card p {color:var(--muted);font-size:11px;line-height:1.6}
+
+    .field {display:grid;gap:8px}
+    .field label {color:#bdc9c0;font-size:12px;font-weight:600}
+    .field input,.field select {
+      width:100%;min-height:45px;padding:11px 13px;background:#0a110c;color:var(--text);
+      border:1px solid var(--border);border-radius:8px;outline:none;
+    }
+    .field input:focus,.field select:focus {border-color:var(--green)}
+    .field input::placeholder {color:#617066}
+    .help {color:#74847a;font-size:11px;line-height:1.6}
+    .form-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+    .field.full {grid-column:1/-1}
+
+    .btn {
+      border:1px solid transparent;border-radius:8px;padding:12px 17px;
+      font-weight:700;font-size:12px;cursor:pointer;transition:.2s;
+    }
+    .btn-primary {background:var(--green);color:#061009}
+    .btn-primary:hover {background:#4ade80}
+    .btn-secondary {color:var(--text);background:#18231b;border-color:var(--border)}
+    .btn-secondary:hover {border-color:var(--green)}
+    .btn-small {padding:9px 12px;font-size:11px}
+
+    .notice {
+      display:flex;gap:12px;padding:15px;margin-top:18px;background:rgba(34,197,94,.05);
+      border:1px solid rgba(34,197,94,.16);border-radius:10px;color:#a9b8ad;
+      font-size:12px;line-height:1.7;
+    }
+    .notice strong {color:var(--green)}
+    .notice.warning {background:rgba(250,204,21,.05);border-color:rgba(250,204,21,.2)}
+    .notice.warning strong {color:var(--yellow)}
+    .form-actions {display:flex;flex-wrap:wrap;gap:10px;margin-top:21px}
+
+    .status {
+      display:inline-flex;align-items:center;gap:7px;padding:7px 10px;
+      border:1px solid rgba(250,204,21,.2);background:rgba(250,204,21,.07);
+      color:var(--yellow);border-radius:30px;font-size:10px;font-weight:700;
+    }
+    .status-dot {width:6px;height:6px;border-radius:50%;background:currentColor}
+    .status.success {color:var(--green);background:var(--green-soft);border-color:rgba(34,197,94,.2)}
+    .status.danger {color:var(--red);background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.2)}
+
+    .empty-state {text-align:center;padding:42px 15px}
+    .empty-icon {
+      width:58px;height:58px;display:grid;place-items:center;margin:0 auto 15px;
+      border:1px solid rgba(34,197,94,.2);border-radius:17px;background:var(--green-soft);font-size:25px;
+    }
+    .empty-state h3 {font-family:"Barlow Condensed",sans-serif;font-size:24px;margin-bottom:8px}
+    .empty-state p {max-width:450px;margin:auto;color:var(--muted);font-size:12px;line-height:1.8}
+
+    .toolbar {display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:18px}
+    .toolbar .field {min-width:240px;flex:1}
+    .match-list {display:grid;gap:12px}
+    .match-card {background:#0b120d;border:1px solid var(--border);border-radius:12px;padding:17px}
+    .match-top {display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:15px}
+    .match-number {font-family:"Barlow Condensed",sans-serif;font-size:19px}
+    .match-meta {color:var(--muted);font-size:10px;margin-top:4px}
+    .match-status {font-size:10px;font-weight:700;padding:6px 9px;border-radius:20px;background:#18231b;color:#b9c7bd}
+    .teams-row {display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin-bottom:16px}
+    .team-name {font-weight:700;font-size:13px;overflow-wrap:anywhere}
+    .team-name:last-child {text-align:right}
+    .vs {font-family:"Barlow Condensed",sans-serif;color:var(--green);font-size:18px}
+    .schedule-editor {display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end}
+    .schedule-editor .field input {min-height:39px;padding:8px 10px;font-size:11px}
+    .schedule-editor label {font-size:10px}
+    .match-foot {color:var(--muted);font-size:10px;margin-top:12px;line-height:1.6}
+    .loading {color:var(--muted);font-size:12px;padding:20px;text-align:center}
+    .error-text {color:var(--red);font-size:12px;line-height:1.6}
+    .muted {color:var(--muted)}
+    .small-note {font-size:11px;color:var(--muted);line-height:1.6;margin-top:12px}
+
+    .toast {
+      position:fixed;right:22px;bottom:22px;max-width:380px;padding:14px 18px;
+      background:#17231a;color:var(--text);border:1px solid rgba(34,197,94,.35);
+      border-radius:10px;box-shadow:0 15px 45px rgba(0,0,0,.4);font-size:12px;
+      z-index:50;display:none;line-height:1.6;
+    }
+    .toast.show {display:block}
+    .menu-button {
+      display:none;width:40px;height:40px;background:var(--panel);color:var(--text);
+      border:1px solid var(--border);border-radius:8px;cursor:pointer;
+    }
+
+    @media(max-width:1050px) {
+      .sidebar {width:215px}
+      .main {margin-left:215px}
+      .info-grid {grid-template-columns:1fr}
+      .schedule-editor {grid-template-columns:1fr 1fr}
+    }
+    @media(max-width:760px) {
+      .sidebar {width:270px;transform:translateX(-100%);transition:transform .25s ease}
+      .sidebar.open {transform:translateX(0)}
+      .main {margin-left:0;padding:25px 5%}
+      .menu-button {display:grid;place-items:center;margin-bottom:12px}
+      .topbar {align-items:flex-start}
+      .account {display:none}
+      .form-grid {grid-template-columns:1fr}
+      .field.full {grid-column:auto}
+      .schedule-editor {grid-template-columns:1fr}
+      .section-heading {align-items:flex-start;flex-direction:column}
+    }
+    @media(prefers-reduced-motion:reduce) {
+      *,*::before,*::after {scroll-behavior:auto!important;transition-duration:.01ms!important}
+    }
+  </style>
+</head>
+
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <a href="index.html" class="brand">
+      <span class="brand-mark"><span></span><span></span><span></span></span>
+      <span>WICKET<span class="green">RA</span></span>
+    </a>
+
+    <div class="nav-label">WORKSPACE</div>
+    <nav class="side-nav">
+      <a href="dashboard.html"><span class="nav-icon">⌂</span> Overview</a>
+      <a href="tournaments.html"><span class="nav-icon">▦</span> Tournaments</a>
+      <a href="teams.html"><span class="nav-icon">♟</span> Teams &amp; Players</a>
+      <a href="fixtures.html" class="active"><span class="nav-icon">▤</span> Fixtures</a>
+      <a href="live-scoring.html"><span class="nav-icon">◉</span> Live Scoring</a>
+      <a href="points-table.html"><span class="nav-icon">▥</span> Points &amp; Rankings</a>
+      <a href="notifications.html"><span class="nav-icon">♢</span> Notifications</a>
+      <a href="reports.html"><span class="nav-icon">▧</span> Match Reports</a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <a href="index.html">← Visit Website</a>
+      <a href="#" id="logoutButton">↪ Sign out</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <button class="menu-button" id="menuButton" type="button" aria-label="Open navigation">☰</button>
+        <div class="breadcrumb">Workspace / Fixtures</div>
+        <h1 class="page-title">FIXTURES &amp; <span class="green">SCHEDULING.</span></h1>
+        <p class="page-subtitle">Generate tournament fixtures and manage match schedules.</p>
+      </div>
+
+      <div class="account">
+        <div class="avatar" id="avatar">A</div>
+        <div>
+          <strong id="accountName" style="font-size:12px;">Loading account...</strong>
+          <small id="accountRole">WICKETRA workspace</small>
+        </div>
+      </div>
+    </header>
+
+    <section class="info-grid">
+      <div class="info-card">
+        <strong id="tournamentCount">—</strong>
+        <p>Your tournaments available in the database.</p>
+      </div>
+      <div class="info-card">
+        <strong id="approvedCount">—</strong>
+        <p>Approved team registrations for the selected tournament.</p>
+      </div>
+      <div class="info-card">
+        <strong id="fixtureCount">—</strong>
+        <p>Saved matches in the selected tournament.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-heading">
+        <div>
+          <h2>GENERATE FIXTURES</h2>
+          <p>Choose a tournament and generate its fixtures using the saved approved registrations.</p>
+        </div>
+        <span class="status success"><span class="status-dot"></span> SUPABASE CONNECTED WHEN SESSION LOADS</span>
+      </div>
+
+      <div class="panel">
+        <form id="fixtureForm">
+          <div class="form-grid">
+            <div class="field full">
+              <label for="tournament">Select Tournament</label>
+              <select id="tournament" required>
+                <option value="">Loading your tournaments...</option>
+              </select>
+              <span class="help">Only tournaments created by your account are listed here.</span>
+            </div>
+
+            <div class="field">
+              <label for="format">Tournament Format</label>
+              <input id="format" type="text" readonly placeholder="Selected tournament format">
+              <span class="help">Loaded directly from the tournament record.</span>
+            </div>
+
+            <div class="field">
+              <label for="teams">Approved Teams</label>
+              <input id="teams" type="number" readonly placeholder="Automatically calculated">
+              <span class="help">Only registrations with approved status are counted.</span>
+            </div>
+          </div>
+
+          <div class="notice">
+            <span>ⓘ</span>
+            <div>
+              <strong>Fixture generation rules:</strong>
+              League and Knockout formats use the existing WICKETRA database functions. The generator reads approved registrations from your selected tournament. It will not create fixtures for unsupported formats or invent participating teams.
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-primary" id="generateButton" type="submit">Generate Fixtures</button>
+            <button class="btn btn-secondary" id="refreshButton" type="button">Refresh Data</button>
+          </div>
+          <p class="small-note" id="generationNote">Select a tournament to check its format and approved team count.</p>
+        </form>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-heading">
+        <div>
+          <h2>MATCH SCHEDULE</h2>
+          <p>Saved fixtures and schedule details from your database.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="toolbar">
+          <div class="field">
+            <label for="scheduleTournament">Tournament Schedule</label>
+            <select id="scheduleTournament">
+              <option value="">Select a tournament</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary" id="reloadMatchesButton" type="button">Reload Matches</button>
+        </div>
+
+        <div id="matchList">
+          <div class="loading">Loading match schedule...</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-heading">
+        <div>
+          <h2>SCHEDULING CONFLICT CHECK</h2>
+          <p>Database checks are applied when a match schedule is saved.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="notice">
+          <span>ⓘ</span>
+          <div>
+            <strong>How conflict checking works:</strong>
+            WICKETRA's database scheduling trigger checks overlapping team and venue assignments when a match is scheduled or updated. If the database rejects a schedule because of a conflict, this page will display the database error. This is not a separate full-tournament availability report.
+          </div>
+        </div>
+        <p class="small-note" id="conflictStatus">No schedule update has been attempted in this session.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  // WICKETRA Supabase project
+  const SUPABASE_URL = "https://ywehjzrajdokbzvvnsfk.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_TXW4VKa-8hdrigWVzju6bA_5fQh19nj";
+
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const sidebar = document.getElementById("sidebar");
+  const menuButton = document.getElementById("menuButton");
+  const toast = document.getElementById("toast");
+
+  const tournamentSelect = document.getElementById("tournament");
+  const scheduleTournament = document.getElementById("scheduleTournament");
+  const formatInput = document.getElementById("format");
+  const teamsInput = document.getElementById("teams");
+  const generateButton = document.getElementById("generateButton");
+  const matchList = document.getElementById("matchList");
+
+  let currentUser = null;
+  let currentProfile = null;
+  let tournaments = [];
+  let selectedTournament = null;
+  let toastTimer = null;
+
+  function showMessage(message) {
+    toast.textContent = message;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 5000);
+  }
+
+  function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, character => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#039;"
+    })[character]);
+  }
+
+  function formatLabel(value) {
+    const labels = {
+      league: "League",
+      knockout: "Knockout",
+      double_elimination: "Double Elimination",
+      group_stage_knockout: "Group Stage + Knockout",
+      custom: "Custom"
+    };
+    return labels[value] || value || "Not specified";
+  }
+
+  function formatDateTime(value) {
+    if (!value) return "Not scheduled";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "Not scheduled";
+    return date.toLocaleString([], {
+      dateStyle: "medium",
+      timeStyle: "short"
+    });
+  }
+
+  function getTeamName(teamId, teamMap) {
+    if (!teamId) return "To be decided";
+    return teamMap.get(teamId) || "Team " + teamId.slice(0, 8);
+  }
+
+  function setGenerationNote(message, isError = false) {
+    const note = document.getElementById("generationNote");
+    note.textContent = message;
+    note.style.color = isError ? "var(--red)" : "var(--muted)";
+  }
+
+  async function loadProfile() {
+    const { data, error } = await db
+      .from("profiles")
+      .select("full_name, role, account_status")
+      .eq("id", currentUser.id)
+      .single();
+
+    if (error) throw error;
+
+    currentProfile = data;
+
+    const name = data.full_name || currentUser.email || "WICKETRA User";
+    document.getElementById("accountName").textContent = name;
+    document.getElementById("accountRole").textContent = data.role || "Account";
+    document.getElementById("avatar").textContent = name.trim().charAt(0).toUpperCase() || "A";
+
+    if (data.account_status === "suspended") {
+      showMessage("Your account is suspended. Contact WICKETRA support.");
+      generateButton.disabled = true;
+    }
+  }
+
+  async function loadTournaments() {
+    tournamentSelect.innerHTML = '<option value="">Loading tournaments...</option>';
+    scheduleTournament.innerHTML = '<option value="">Select a tournament</option>';
+
+    const { data, error } = await db
+      .from("tournaments")
+      .select("id, name, format, status, start_date, end_date, venue")
+      .eq("organizer_id", currentUser.id)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    tournaments = data || [];
+    document.getElementById("tournamentCount").textContent = tournaments.length;
+
+    tournamentSelect.innerHTML = '<option value="">Select a tournament</option>';
+    scheduleTournament.innerHTML = '<option value="">Select a tournament</option>';
+
+    tournaments.forEach(tournament => {
+      const option1 = document.createElement("option");
+      option1.value = tournament.id;
+      option1.textContent = tournament.name;
+      tournamentSelect.appendChild(option1);
+
+      const option2 = document.createElement("option");
+      option2.value = tournament.id;
+      option2.textContent = tournament.name;
+      scheduleTournament.appendChild(option2);
+    });
+
+    if (!tournaments.length) {
+      tournamentSelect.innerHTML = '<option value="">No tournaments found</option>';
+      scheduleTournament.innerHTML = '<option value="">No tournaments found</option>';
+      teamsInput.value = "";
+      formatInput.value = "";
+      document.getElementById("approvedCount").textContent = "0";
+      document.getElementById("fixtureCount").textContent = "0";
+      setGenerationNote("Create a tournament first. Your tournaments will appear here.");
+      matchList.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">▤</div>
+          <h3>NO TOURNAMENTS FOUND</h3>
+          <p>Create a tournament before generating fixtures.</p>
+          <div class="form-actions" style="justify-content:center">
+            <a class="btn btn-primary" href="tournaments.html">Open Tournaments</a>
+          </div>
+        </div>`;
+      return;
+    }
+
+    const firstId = tournaments[0].id;
+    tournamentSelect.value = firstId;
+    scheduleTournament.value = firstId;
+    await selectTournament(firstId);
+  }
+
+  async function getApprovedRegistrations(tournamentId) {
+    const { data, error } = await db
+      .from("team_registrations")
+      .select("id, team_id, tournament_id, status")
+      .eq("tournament_id", tournamentId)
+      .eq("status", "approved");
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  async function selectTournament(tournamentId) {
+    selectedTournament = tournaments.find(item => item.id === tournamentId) || null;
+
+    if (!selectedTournament) {
+      formatInput.value = "";
+      teamsInput.value = "";
+      document.getElementById("approvedCount").textContent = "—";
+      document.getElementById("fixtureCount").textContent = "—";
+      return;
+    }
+
+    formatInput.value = formatLabel(selectedTournament.format);
+
+    try {
+      const registrations = await getApprovedRegistrations(tournamentId);
+      const teamIds = [...new Set(registrations.map(item => item.team_id).filter(Boolean))];
+
+      teamsInput.value = teamIds.length;
+      document.getElementById("approvedCount").textContent = teamIds.length;
+
+      const supported = ["league", "knockout"].includes(selectedTournament.format);
+
+      if (!supported) {
+        generateButton.disabled = true;
+        setGenerationNote(
+          "The selected format is " + formatLabel(selectedTournament.format) +
+          ". The current database has no fixture-generation function for this format.",
+          true
+        );
+      } else if (teamIds.length < 2) {
+        generateButton.disabled = true;
+        setGenerationNote("At least two approved teams are required before fixtures can be generated.", true);
+      } else {
+        generateButton.disabled = currentProfile?.account_status === "suspended";
+        setGenerationNote(
+          teamIds.length + " approved teams found. " +
+          formatLabel(selectedTournament.format) + " fixture generation is available."
+        );
+      }
+
+      await loadMatches(tournamentId);
+    } catch (error) {
+      console.error("Tournament selection error:", error);
+      showMessage("Could not load approved registrations: " + error.message);
+      setGenerationNote("Could not verify approved teams. Check your database permissions.", true);
+      generateButton.disabled = true;
+    }
+  }
+
+  async function loadMatches(tournamentId) {
+    if (!tournamentId) {
+      matchList.innerHTML = '<div class="empty-state"><h3>SELECT A TOURNAMENT</h3><p>Choose a tournament to view its saved fixtures.</p></div>';
+      return;
+    }
+
+    matchList.innerHTML = '<div class="loading">Loading saved matches...</div>';
+
+    const { data: matches, error } = await db
+      .from("matches")
+      .select("id, tournament_id, match_number, match_title, stage, group_name, round_name, team1_id, team2_id, scheduled_at, venue, status, result_summary")
+      .eq("tournament_id", tournamentId)
+      .order("match_number", { ascending: true });
+
+    if (error) {
+      matchList.innerHTML = '<p class="error-text">Could not load matches: ' + escapeHTML(error.message) + '</p>';
+      showMessage("Could not load matches: " + error.message);
+      document.getElementById("fixtureCount").textContent = "—";
+      return;
+    }
+
+    const matchRows = matches || [];
+    document.getElementById("fixtureCount").textContent = matchRows.length;
+
+    if (!matchRows.length) {
+      matchList.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">▤</div>
+          <h3>NO FIXTURES AVAILABLE</h3>
+          <p>No matches have been saved for this tournament yet. Generate fixtures above after approving at least two teams.</p>
+        </div>`;
+      return;
+    }
+
+    const teamIds = [...new Set(matchRows.flatMap(match => [match.team1_id, match.team2_id]).filter(Boolean))];
+    const teamMap = new Map();
+
+    if (teamIds.length) {
+      const { data: teams, error: teamError } = await db
+        .from("teams")
+        .select("id, name")
+        .in("id", teamIds);
+
+      if (!teamError && teams) {
+        teams.forEach(team => teamMap.set(team.id, team.name));
+      } else if (teamError) {
+        console.warn("Team names could not be loaded:", teamError.message);
+      }
+    }
+
+    matchList.innerHTML = '<div class="match-list">' + matchRows.map((match, index) => {
+      const title = match.match_title || (
+        match.match_number ? "Match " + match.match_number : "Match " + (index + 1)
+      );
+      const team1 = getTeamName(match.team1_id, teamMap);
+      const team2 = getTeamName(match.team2_id, teamMap);
+      const status = (match.status || "scheduled").replaceAll("_", " ");
+      const dateValue = match.scheduled_at ? new Date(match.scheduled_at) : null;
+      const dateInput = dateValue && !Number.isNaN(dateValue.getTime())
+        ? dateValue.toISOString().slice(0, 16)
+        : "";
+
+      return `
+        <article class="match-card" data-match-id="${escapeHTML(match.id)}">
+          <div class="match-top">
+            <div>
+              <div class="match-number">${escapeHTML(title)}</div>
+              <div class="match-meta">
+                ${escapeHTML(match.stage || match.round_name || match.group_name || "Tournament match")}
+              </div>
+            </div>
+            <span class="match-status">${escapeHTML(status.toUpperCase())}</span>
+          </div>
+
+          <div class="teams-row">
+            <div class="team-name">${escapeHTML(team1)}</div>
+            <div class="vs">VS</div>
+            <div class="team-name">${escapeHTML(team2)}</div>
+          </div>
+
+          <div class="schedule-editor">
+            <div class="field">
+              <label>Match Date &amp; Time</label>
+              <input class="match-date" type="datetime-local" value="${escapeHTML(dateInput)}">
+            </div>
+            <div class="field">
+              <label>Venue</label>
+              <input class="match-venue" type="text" maxlength="200" value="${escapeHTML(match.venue || "")}" placeholder="Enter venue">
+            </div>
+            <div class="field">
+              <label>Current Schedule</label>
+              <input type="text" readonly value="${escapeHTML(formatDateTime(match.scheduled_at))}">
+            </div>
+            <button class="btn btn-primary btn-small save-schedule" type="button">Save</button>
+          </div>
+
+          ${match.result_summary ? `<div class="match-foot">Result: ${escapeHTML(match.result_summary)}</div>` : ""}
+          <div class="match-foot">Save updates the match schedule in your WICKETRA database.</div>
+        </article>`;
+    }).join("") + '</div>';
+
+    matchList.querySelectorAll(".save-schedule").forEach(button => {
+      button.addEventListener("click", saveMatchSchedule);
+    });
+  }
+
+  async function saveMatchSchedule(event) {
+    const button = event.currentTarget;
+    const card = button.closest(".match-card");
+    const matchId = card.dataset.matchId;
+    const dateValue = card.querySelector(".match-date").value;
+    const venueValue = card.querySelector(".match-venue").value.trim();
+
+    if (!dateValue) {
+      showMessage("Choose a match date and time before saving.");
+      return;
+    }
+
+    const selectedDate = new Date(dateValue);
+    if (Number.isNaN(selectedDate.getTime())) {
+      showMessage("Please enter a valid match date and time.");
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = "Saving...";
+
+    const updateData = {
+      scheduled_at: selectedDate.toISOString(),
+      venue: venueValue || null
+    };
+
+    const { error } = await db
+      .from("matches")
+      .update(updateData)
+      .eq("id", matchId);
+
+    button.disabled = false;
+    button.textContent = "Save";
+
+    if (error) {
+      console.error("Schedule update error:", error);
+      document.getElementById("conflictStatus").textContent =
+        "Last schedule update failed: " + error.message;
+      document.getElementById("conflictStatus").style.color = "var(--red)";
+      showMessage("Schedule not saved: " + error.message);
+      return;
+    }
+
+    document.getElementById("conflictStatus").textContent =
+      "Last schedule update saved successfully. Database scheduling checks accepted the update.";
+    document.getElementById("conflictStatus").style.color = "var(--green)";
+
+    showMessage("Match schedule saved successfully.");
+    await loadMatches(scheduleTournament.value);
+  }
+
+  async function generateFixtures(event) {
+    event.preventDefault();
+
+    const tournamentId = tournamentSelect.value;
+    if (!tournamentId) {
+      showMessage("Select a tournament first.");
+      return;
+    }
+
+    const tournament = tournaments.find(item => item.id === tournamentId);
+    if (!tournament) {
+      showMessage("Selected tournament could not be found.");
+      return;
+    }
+
+    if (!["league", "knockout"].includes(tournament.format)) {
+      showMessage("Fixture generation is currently available only for League and Knockout tournaments.");
+      return;
+    }
+
+    if (currentProfile?.account_status === "suspended") {
+      showMessage("Your account is suspended. You cannot generate fixtures.");
+      return;
+    }
+
+    let registrations;
+    try {
+      registrations = await getApprovedRegistrations(tournamentId);
+    } catch (error) {
+      showMessage("Could not check approved teams: " + error.message);
+      return;
+    }
+
+    const teamIds = [...new Set(registrations.map(item => item.team_id).filter(Boolean))];
+
+    if (teamIds.length < 2) {
+      showMessage("At least two approved teams are required.");
+      return;
+    }
+
+    const existing = await db
+      .from("matches")
+      .select("id")
+      .eq("tournament_id", tournamentId)
+      .limit(1);
+
+    if (existing.error) {
+      showMessage("Could not check existing fixtures: " + existing.error.message);
+      return;
+    }
+
+    if (existing.data && existing.data.length > 0) {
+      showMessage("Fixtures already exist for this tournament. The generator will not create duplicate fixtures.");
+      await loadMatches(tournamentId);
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Generate " + tournament.format + " fixtures for " + teamIds.length +
+      " approved teams? This will save matches in your database."
+    );
+
+    if (!confirmed) return;
+
+    generateButton.disabled = true;
+    generateButton.textContent = "Generating...";
+
+    const rpcName = tournament.format === "league"
+      ? "generate_league_fixtures"
+      : "generate_knockout_fixtures";
+
+    const { data, error } = await db.rpc(rpcName, {
+      p_tournament_id: tournamentId
+    });
+
+    generateButton.disabled = false;
+    generateButton.textContent = "Generate Fixtures";
+
+    if (error) {
+      console.error("Fixture generation error:", error);
+      showMessage("Fixture generation failed: " + error.message);
+      setGenerationNote("The database did not generate fixtures. Check the RPC permissions and database error.", true);
+      return;
+    }
+
+    const resultMessage = typeof data === "string"
+      ? data
+      : "The database function completed.";
+
+    showMessage("Fixture generation request completed. " + resultMessage);
+    setGenerationNote("Fixture generation function completed. Reloading saved matches...");
+    scheduleTournament.value = tournamentId;
+    await loadMatches(tournamentId);
+  }
+
+  async function refreshAll() {
+    try {
+      await loadTournaments();
+      showMessage("Tournament and fixture data refreshed.");
+    } catch (error) {
+      console.error(error);
+      showMessage("Refresh failed: " + error.message);
+    }
+  }
+
+  tournamentSelect.addEventListener("change", async () => {
+    const id = tournamentSelect.value;
+    scheduleTournament.value = id;
+    await selectTournament(id);
+  });
+
+  scheduleTournament.addEventListener("change", async () => {
+    const id = scheduleTournament.value;
+    if (id) {
+      tournamentSelect.value = id;
+      await selectTournament(id);
+    }
+  });
+
+  document.getElementById("fixtureForm").addEventListener("submit", generateFixtures);
+  document.getElementById("refreshButton").addEventListener("click", refreshAll);
+  document.getElementById("reloadMatchesButton").addEventListener("click", async () => {
+    if (!scheduleTournament.value) {
+      showMessage("Select a tournament first.");
+      return;
+    }
+    await loadMatches(scheduleTournament.value);
+    showMessage("Match list refreshed.");
+  });
+
+  menuButton.addEventListener("click", () => sidebar.classList.toggle("open"));
+
+  document.addEventListener("click", event => {
+    if (
+      window.innerWidth <= 760 &&
+      !sidebar.contains(event.target) &&
+      !menuButton.contains(event.target)
+    ) {
+      sidebar.classList.remove("open");
+    }
+  });
+
+  document.getElementById("logoutButton").addEventListener("click", async event => {
+    event.preventDefault();
+    const { error } = await db.auth.signOut();
+    if (error) {
+      showMessage("Sign out failed: " + error.message);
+      return;
+    }
+    window.location.href = "index.html";
+  });
+
+  async function initialise() {
+    try {
+      const { data, error } = await db.auth.getSession();
+      if (error) throw error;
+
+      const session = data.session;
+      if (!session) {
+        window.location.href = "index.html#login";
+        return;
+      }
+
+      currentUser = session.user;
+
+      await loadProfile();
+
+      if (currentProfile?.account_status === "suspended") {
+        generateButton.disabled = true;
+      }
+
+      await loadTournaments();
+    } catch (error) {
+      console.error("WICKETRA fixtures initialization error:", error);
+      matchList.innerHTML = '<p class="error-text">Could not connect to WICKETRA: ' + escapeHTML(error.message) + '</p>';
+      showMessage("Could not load your WICKETRA account: " + error.message);
+    }
+  }
+
+  db.auth.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_OUT") {
+      window.location.href = "index.html#login";
+    }
+  });
+
+  initialise();
+</script>
+</body>
+</html>

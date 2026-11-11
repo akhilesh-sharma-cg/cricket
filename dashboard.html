@@ -1,0 +1,1130 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080d0b">
+<title>WICKETRA | My Dashboard</title>
+<meta name="description" content="Your WICKETRA cricket management dashboard.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#080d0b;--sidebar:#0b120f;--panel:#101915;--panel2:#142019;
+  --green:#22c55e;--green-light:#4ade80;--text:#f3f7f4;
+  --muted:#89968e;--border:rgba(255,255,255,.075);
+  --danger:#ef6464;--radius:13px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  min-height:100vh;background:radial-gradient(ellipse at 70% 0%,rgba(34,197,94,.055),transparent 35%),var(--bg);
+  color:var(--text);font-family:'DM Sans',sans-serif
+}
+button,a{font:inherit}a{color:inherit;text-decoration:none}
+button{color:inherit}button:focus-visible,a:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+.layout{min-height:100vh}
+.sidebar{
+  position:fixed;inset:0 auto 0 0;z-index:30;width:250px;padding:25px 17px;
+  background:var(--sidebar);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;transition:transform .25s ease
+}
+.logo{display:flex;align-items:center;gap:10px;padding:0 10px;margin-bottom:39px}
+.logo-mark{
+  width:35px;height:35px;display:grid;place-items:center;border-radius:10px;
+  background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:var(--green);font-size:19px
+}
+.logo-name{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:800;letter-spacing:1px}
+.logo-name span{color:var(--green)}
+.side-label{margin:22px 11px 10px;color:#647169;font-size:9px;font-weight:800;letter-spacing:2px}
+.nav-link{
+  display:flex;align-items:center;gap:13px;padding:12px 13px;margin:3px 0;
+  border:1px solid transparent;border-radius:9px;color:#9aa69e;font-size:12px;font-weight:600;
+  transition:background .2s,color .2s,border .2s
+}
+.nav-link:hover{color:white;background:rgba(255,255,255,.045)}
+.nav-link.active{color:var(--green-light);background:rgba(34,197,94,.105);border-color:rgba(34,197,94,.15)}
+.nav-icon{width:20px;text-align:center;font-size:16px}
+.sidebar-spacer{flex:1}
+.sidebar-note{padding:13px 12px;margin:10px 2px;border:1px solid rgba(34,197,94,.17);background:rgba(34,197,94,.055);border-radius:10px}
+.sidebar-note strong{display:block;font-size:11px;margin-bottom:5px}
+.sidebar-note p{color:var(--muted);font-size:10px;line-height:1.6}
+.sidebar-bottom{border-top:1px solid var(--border);padding-top:14px}
+.main{margin-left:250px;min-height:100vh;padding:0 31px 35px}
+.topbar{
+  min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:20px;
+  border-bottom:1px solid var(--border);margin-bottom:30px
+}
+.topbar-left,.topbar-right{display:flex;align-items:center;gap:16px}
+.breadcrumb{color:var(--muted);font-size:11px}
+.breadcrumb strong{color:white}
+.topbar-status{
+  display:flex;align-items:center;gap:7px;color:#a5b2a9;font-size:10px;
+  padding:7px 10px;border:1px solid var(--border);border-radius:20px
+}
+.status-dot{width:7px;height:7px;background:#6b9b79;border-radius:50%}
+.icon-button{
+  width:38px;height:38px;display:grid;place-items:center;background:var(--panel);
+  border:1px solid var(--border);border-radius:10px;cursor:pointer
+}
+.icon-button:hover{border-color:rgba(34,197,94,.4);color:var(--green-light)}
+.profile{display:flex;align-items:center;gap:10px;padding-left:14px;border-left:1px solid var(--border)}
+.avatar{
+  width:36px;height:36px;display:grid;place-items:center;border-radius:50%;
+  color:var(--green-light);background:rgba(34,197,94,.12);
+  border:1px solid rgba(34,197,94,.3);font-size:13px;font-weight:800
+}
+.profile-name{font-size:11px;font-weight:700}
+.profile-role{font-size:9px;color:var(--muted);margin-top:3px}
+.menu-toggle{display:none}
+.page-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:25px}
+.eyebrow{color:var(--green);font-size:9px;font-weight:800;letter-spacing:2.5px;margin-bottom:8px}
+h1,h2,h3{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase}
+h1{font-size:clamp(35px,4vw,47px);line-height:1;letter-spacing:.5px}
+h1 span{color:var(--green)}
+.subtitle{color:var(--muted);font-size:11px;line-height:1.7;margin-top:9px}
+.primary-btn,.secondary-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border-radius:8px;padding:12px 16px;font-size:10px;font-weight:800;cursor:pointer;transition:.2s
+}
+.primary-btn{background:var(--green);color:#061009;border:1px solid var(--green)}
+.primary-btn:hover{background:var(--green-light);transform:translateY(-2px)}
+.secondary-btn{background:var(--panel2);color:#e7eee9;border:1px solid var(--border)}
+.secondary-btn:hover{border-color:rgba(34,197,94,.4);color:var(--green-light)}
+.dashboard-grid{display:grid;grid-template-columns:minmax(0,1fr) 285px;gap:18px;align-items:start}
+.main-column{min-width:0}.right-column{display:grid;gap:17px;min-width:0}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.stat-card{
+  position:relative;overflow:hidden;padding:17px 15px;min-height:112px;
+  background:linear-gradient(145deg,#142019,#0e1511);border:1px solid var(--border);border-radius:var(--radius)
+}
+.stat-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.stat-label{color:var(--muted);font-size:9px;font-weight:700;letter-spacing:.5px}
+.stat-icon{font-size:17px;color:var(--green)}
+.stat-value{font-family:'Barlow Condensed',sans-serif;font-size:32px;line-height:1;margin-top:16px;color:#edf6ef}
+.stat-note{color:#718078;font-size:9px;margin-top:5px}
+.panel,.operation-card{
+  background:linear-gradient(145deg,rgba(18,27,22,.98),rgba(13,20,16,.98));
+  border:1px solid var(--border);border-radius:var(--radius);padding:18px;min-width:0
+}
+.panel{margin-bottom:17px}
+.panel-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:17px}
+.panel-heading h2,.operation-card h2{font-size:20px;letter-spacing:.4px}
+.panel-link{color:var(--green-light);font-size:10px;font-weight:700}
+.panel-link:hover{text-decoration:underline}
+.panel-subtitle{color:var(--muted);font-size:10px;margin-top:4px}
+.empty-state{text-align:center;padding:27px 15px;border:1px dashed rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.012)}
+.empty-icon{
+  width:47px;height:47px;display:grid;place-items:center;margin:0 auto 12px;
+  border-radius:13px;background:rgba(34,197,94,.09);color:var(--green);font-size:21px
+}
+.empty-state h3{font-size:20px;margin-bottom:7px}
+.empty-state p{max-width:360px;margin:0 auto 15px;color:var(--muted);font-size:10px;line-height:1.7}
+.data-list{display:grid;gap:10px}
+.data-item{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px;background:#0d1511;border:1px solid var(--border);border-radius:10px
+}
+.data-item-main{min-width:0}
+.data-item strong{display:block;font-size:12px;overflow-wrap:anywhere}
+.data-item small{display:block;color:var(--muted);font-size:9px;margin-top:5px;line-height:1.6}
+.data-item .item-status{
+  display:inline-block;padding:5px 8px;border-radius:20px;color:var(--green-light);
+  background:rgba(34,197,94,.09);font-size:9px;white-space:nowrap
+}
+.data-item .item-status.neutral{color:#c5cec8;background:rgba(255,255,255,.06)}
+.data-item a{color:var(--green-light);font-size:10px;font-weight:700;white-space:nowrap}
+.quick-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.action-card{display:block;min-width:0;padding:15px 12px;border-radius:10px;border:1px solid var(--border);background:#121c16;transition:.2s}
+.action-card:hover{transform:translateY(-3px);border-color:rgba(34,197,94,.45);background:#17251c}
+.action-icon{font-size:21px;margin-bottom:12px}
+.action-card h3{font-size:17px;margin-bottom:5px}
+.action-card p{color:var(--muted);font-size:9px;line-height:1.6}
+.operation-card h2{font-size:20px;margin-bottom:5px}
+.operation-card>p{color:var(--muted);font-size:10px;line-height:1.6;margin-bottom:15px}
+.operation-link{
+  display:flex;align-items:center;gap:11px;padding:12px 10px;border-radius:9px;
+  background:rgba(255,255,255,.025);border:1px solid var(--border);margin-top:9px;transition:.2s
+}
+.operation-link:hover{border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.06)}
+.operation-icon{
+  width:34px;height:34px;display:grid;place-items:center;border-radius:9px;
+  background:rgba(34,197,94,.1);color:var(--green-light);font-size:16px;flex-shrink:0
+}
+.operation-link strong{display:block;font-size:10px}
+.operation-link small{display:block;color:var(--muted);font-size:9px;margin-top:4px;line-height:1.4}
+.operation-arrow{margin-left:auto;color:#718078;font-size:14px}
+.management-list{display:grid;gap:9px}
+.management-item{display:flex;align-items:center;gap:11px;padding:12px;background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:9px}
+.management-item-icon{font-size:17px;color:var(--green-light)}
+.management-item strong{display:block;font-size:10px}
+.management-item small{display:block;color:var(--muted);font-size:9px;margin-top:4px}
+.footer{display:flex;justify-content:space-between;gap:15px;border-top:1px solid var(--border);margin-top:30px;padding-top:17px;color:#68766e;font-size:9px}
+.toast{
+  position:fixed;z-index:100;right:22px;bottom:22px;max-width:360px;padding:13px 16px;
+  color:white;background:#17251c;border:1px solid rgba(34,197,94,.5);border-radius:9px;
+  font-size:11px;line-height:1.5;box-shadow:0 12px 35px rgba(0,0,0,.35);
+  opacity:0;transform:translateY(10px);pointer-events:none;transition:.25s
+}
+.toast.show{opacity:1;transform:translateY(0)}
+.loading{color:var(--muted);font-size:11px;padding:20px;text-align:center}
+.sidebar-overlay{display:none;position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.65)}
+.error-note{color:#ffaaaa;font-size:10px;line-height:1.6;margin-top:12px}
+.hidden{display:none!important}
+@media(max-width:1250px){
+  .dashboard-grid{grid-template-columns:minmax(0,1fr) 255px}
+  .main{padding-left:23px;padding-right:23px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:1000px){
+  .dashboard-grid{grid-template-columns:1fr}
+  .right-column{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-overlay.show{display:block}
+  .main{margin-left:0;padding:0 16px 28px}
+  .menu-toggle{display:grid}
+  .topbar{min-height:66px;margin-bottom:25px}
+  .topbar-status{display:none}
+  .page-intro{align-items:flex-start;flex-direction:column}
+  .right-column{grid-template-columns:1fr}
+  .quick-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .footer{flex-direction:column}
+}
+@media(max-width:480px){
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .stat-card{padding:13px;min-height:105px}
+  .stat-value{font-size:29px}
+  .panel,.operation-card{padding:14px}
+  .profile-info{display:none}
+  .topbar-right{gap:9px}
+  .page-intro .primary-btn{width:100%}
+  .quick-actions{gap:8px}
+  .action-card{padding:13px 10px}
+  .breadcrumb{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+
+<body>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="layout">
+<aside class="sidebar" id="sidebar">
+  <a href="dashboard.html" class="logo">
+    <span class="logo-mark">🏏</span>
+    <span class="logo-name">WICKET<span>RA</span></span>
+  </a>
+
+  <div class="side-label">WORKSPACE</div>
+  <a href="dashboard.html" class="nav-link active"><span class="nav-icon">⌂</span> Dashboard</a>
+  <a href="tournaments.html" class="nav-link" data-roles="super_admin,organizer"><span class="nav-icon">🏆</span> Tournaments</a>
+  <a href="teams.html" class="nav-link" data-roles="super_admin,organizer,captain,player"><span class="nav-icon">👥</span> Teams & Players</a>
+  <a href="fixtures.html" class="nav-link" data-roles="super_admin,organizer,scorer,captain,player"><span class="nav-icon">▦</span> Fixtures</a>
+  <a href="live-scoring.html" class="nav-link" data-roles="super_admin,organizer,scorer"><span class="nav-icon">🏏</span> Live Scoring</a>
+  <a href="points-table.html" class="nav-link" data-roles="super_admin,organizer,captain,player"><span class="nav-icon">📊</span> Points & Rankings</a>
+
+  <div class="side-label">MATCH & ACCOUNT</div>
+  <a href="notifications.html" class="nav-link" data-roles="super_admin,organizer,scorer,captain,player"><span class="nav-icon">♧</span> Notifications</a>
+  <a href="reports.html" class="nav-link" data-roles="super_admin,organizer,scorer,captain,player"><span class="nav-icon">▤</span> Match Reports</a>
+
+  <div class="sidebar-spacer"></div>
+  <div class="sidebar-note">
+    <strong>THE PULSE OF EVERY BALL.</strong>
+    <p>Your cricket operations, organized in one place.</p>
+  </div>
+  <div class="sidebar-bottom">
+    <a href="index.html" class="nav-link"><span class="nav-icon">↗</span> Visit Website</a>
+    <button class="nav-link" id="logoutButton" type="button" style="width:100%;background:transparent;text-align:left;cursor:pointer">
+      <span class="nav-icon">⇥</span> Logout
+    </button>
+  </div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div class="topbar-left">
+    <button class="icon-button menu-toggle" id="menuToggle" aria-label="Open navigation menu" aria-expanded="false">☰</button>
+    <div class="breadcrumb">WICKETRA <span style="color:#526057">/</span> <strong>Dashboard</strong></div>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-status"><span class="status-dot"></span> Connected account</div>
+    <a href="notifications.html" class="icon-button" aria-label="Notifications">♧</a>
+    <div class="profile">
+      <div class="avatar" id="userAvatar">U</div>
+      <div class="profile-info">
+        <div class="profile-name" id="userName">Loading account...</div>
+        <div class="profile-role" id="userRole">Checking account role...</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="page-intro">
+  <div>
+    <div class="eyebrow" id="pageEyebrow">YOUR CRICKET CONTROL CENTER</div>
+    <h1 id="pageTitle">My Dashboard<span>.</span></h1>
+    <p class="subtitle" id="pageSubtitle">Loading your WICKETRA workspace...</p>
+  </div>
+  <a href="tournaments.html" class="primary-btn hidden" id="createTournamentButton">＋ CREATE TOURNAMENT</a>
+</section>
+
+<div class="dashboard-grid">
+<div class="main-column">
+
+<section class="stats" id="statsSection">
+  <div class="stat-card">
+    <div class="stat-top"><span class="stat-label" id="statLabel1">—</span><span class="stat-icon">🏆</span></div>
+    <div class="stat-value" id="statValue1">—</div>
+    <div class="stat-note" id="statNote1">Loading...</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-top"><span class="stat-label" id="statLabel2">—</span><span class="stat-icon">👥</span></div>
+    <div class="stat-value" id="statValue2">—</div>
+    <div class="stat-note" id="statNote2">Loading...</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-top"><span class="stat-label" id="statLabel3">—</span><span class="stat-icon">🏏</span></div>
+    <div class="stat-value" id="statValue3">—</div>
+    <div class="stat-note" id="statNote3">Loading...</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-top"><span class="stat-label" id="statLabel4">—</span><span class="stat-icon">●</span></div>
+    <div class="stat-value" id="statValue4">—</div>
+    <div class="stat-note" id="statNote4">Loading...</div>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h2 id="primaryPanelTitle">YOUR WORKSPACE</h2>
+      <p class="panel-subtitle" id="primaryPanelSubtitle">Information for your account</p>
+    </div>
+    <a href="tournaments.html" class="panel-link hidden" id="primaryPanelLink">Manage →</a>
+  </div>
+  <div id="primaryList" class="data-list">
+    <div class="loading">Loading your workspace...</div>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h2 id="secondaryPanelTitle">RECENT MATCHES</h2>
+      <p class="panel-subtitle" id="secondaryPanelSubtitle">Match information available to your account</p>
+    </div>
+    <a href="fixtures.html" class="panel-link" id="secondaryPanelLink">Fixtures →</a>
+  </div>
+  <div id="matchList" class="data-list">
+    <div class="loading">Loading match information...</div>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h2>QUICK ACTIONS</h2>
+      <p class="panel-subtitle">Shortcuts available for your account role</p>
+    </div>
+  </div>
+  <div class="quick-actions" id="quickActions"></div>
+</section>
+
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h2>WICKETRA FEATURES</h2>
+      <p class="panel-subtitle">Explore the cricket tools available on the platform</p>
+    </div>
+  </div>
+  <div class="management-list">
+    <div class="management-item">
+      <span class="management-item-icon">🏆</span>
+      <div><strong>Tournament Management</strong><small>Organize cricket competitions and registrations.</small></div>
+    </div>
+    <div class="management-item">
+      <span class="management-item-icon">🏏</span>
+      <div><strong>Match Scoring</strong><small>Record match events through the authorised scoring workflow.</small></div>
+    </div>
+    <div class="management-item">
+      <span class="management-item-icon">📊</span>
+      <div><strong>Points & Reports</strong><small>Review standings and reports based on available match records.</small></div>
+    </div>
+  </div>
+</section>
+</div>
+
+<aside class="right-column">
+<section class="operation-card">
+  <div class="eyebrow">YOUR WORKSPACE</div>
+  <h2 id="controlTitle">Control Center</h2>
+  <p id="controlDescription">Open the tools available for your account role.</p>
+  <div id="operationLinks"></div>
+</section>
+
+<section class="operation-card">
+  <div class="eyebrow">STAY INFORMED</div>
+  <h2>Notifications</h2>
+  <p>Check tournament announcements, registration updates and match reminders.</p>
+  <a href="notifications.html" class="secondary-btn" style="width:100%">OPEN NOTIFICATIONS →</a>
+</section>
+
+<section class="operation-card">
+  <div class="eyebrow">YOUR ACCOUNT</div>
+  <h2>Account Details</h2>
+  <p id="accountEmail" style="overflow-wrap:anywhere">Loading account email...</p>
+  <p id="accountRoleDetail" style="margin-top:-7px">Role: Loading...</p>
+  <button class="secondary-btn" id="accountLogout" style="width:100%" type="button">LOG OUT OF WICKETRA</button>
+</section>
+</aside>
+</div>
+
+<footer class="footer">
+  <span>© 2026 WICKETRA. THE PULSE OF EVERY BALL.</span>
+  <span>Cricket. Connected.</span>
+</footer>
+</main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(() => {
+  "use strict";
+
+  const SUPABASE_URL = "https://ywehjzrajdokbzvvnsfk.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_TXW4VKa-8hdrigWVzju6bA_5fQh19nj";
+
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const $ = id => document.getElementById(id);
+
+  const sidebar = $("sidebar");
+  const menuToggle = $("menuToggle");
+  const sidebarOverlay = $("sidebarOverlay");
+  const toast = $("toast");
+  let toastTimer;
+
+  // These roles control dashboard visibility only.
+  // Supabase RLS and database functions must enforce real permissions.
+  const ROLE_CONFIG = {
+    super_admin: {
+      label: "Super Admin",
+      title: "Platform Dashboard",
+      eyebrow: "WICKETRA PLATFORM CONTROL",
+      subtitle: "Review the WICKETRA records and management areas available to your administrator account.",
+      panelTitle: "VISIBLE TOURNAMENTS",
+      panelSubtitle: "Tournament records accessible to your account",
+      actions: [
+        ["🏆","Tournaments","Manage tournament records.","tournaments.html"],
+        ["👥","Teams & Players","Review team records.","teams.html"],
+        ["📅","Fixtures","Review scheduled matches.","fixtures.html"],
+        ["🏏","Live Scoring","Open match scoring.","live-scoring.html"],
+        ["📊","Points & Rankings","Review competition standings.","points-table.html"],
+        ["▤","Match Reports","Open match reports.","reports.html"]
+      ]
+    },
+    organizer: {
+      label: "Organizer",
+      title: "Organizer Dashboard",
+      eyebrow: "YOUR TOURNAMENT CONTROL CENTER",
+      subtitle: "Manage the tournaments, team entries and matches associated with your account.",
+      panelTitle: "MY TOURNAMENTS",
+      panelSubtitle: "Tournaments created by your account",
+      actions: [
+        ["🏆","Create Tournament","Set up a cricket competition.","tournaments.html"],
+        ["👥","Manage Teams","Review teams and registrations.","teams.html"],
+        ["📅","Manage Fixtures","Review tournament schedules.","fixtures.html"],
+        ["🏏","Live Scoring","Open match scoring.","live-scoring.html"]
+      ]
+    },
+    scorer: {
+      label: "Scorer",
+      title: "Scorer Workspace",
+      eyebrow: "YOUR MATCH SCORING WORKSPACE",
+      subtitle: "Open matches assigned to you and manage scoring through the authorised scoring page.",
+      panelTitle: "ASSIGNED MATCHES",
+      panelSubtitle: "Matches assigned to your scorer account",
+      actions: [
+        ["🏏","Live Scoring","Open your scoring workspace.","live-scoring.html"],
+        ["📅","Fixtures","Review match schedules.","fixtures.html"],
+        ["▤","Match Reports","Review available match reports.","reports.html"],
+        ["♧","Notifications","Check match updates.","notifications.html"]
+      ]
+    },
+    captain: {
+      label: "Captain",
+      title: "Captain Dashboard",
+      eyebrow: "YOUR TEAM WORKSPACE",
+      subtitle: "Access team management, fixtures and competition information.",
+      panelTitle: "MY TEAM",
+      panelSubtitle: "Team information linked to your captain account",
+      actions: [
+        ["👥","Team & Players","Open your team workspace.","teams.html"],
+        ["📅","Fixtures","Review upcoming matches.","fixtures.html"],
+        ["📊","Points & Rankings","Review competition standings.","points-table.html"],
+        ["▤","Match Reports","Review available match reports.","reports.html"]
+      ]
+    },
+    player: {
+      label: "Player",
+      title: "Player Dashboard",
+      eyebrow: "YOUR CRICKET WORKSPACE",
+      subtitle: "Access your team, match schedule and competition information.",
+      panelTitle: "MY CRICKET SPACE",
+      panelSubtitle: "Team and match information linked to your player account",
+      actions: [
+        ["👥","Teams & Players","Open the team workspace.","teams.html"],
+        ["📅","My Fixtures","Review match schedules.","fixtures.html"],
+        ["📊","Points & Rankings","Review competition standings.","points-table.html"],
+        ["▤","Match Reports","Review available match reports.","reports.html"]
+      ]
+    }
+  };
+
+  const ROLE_STATS = {
+    super_admin: [
+      ["VISIBLE TOURNAMENTS","Accessible records"],
+      ["VISIBLE MATCHES","Accessible records"],
+      ["LIVE MATCHES","Visible live records"],
+      ["ACCOUNT ROLE","Verified from profile"]
+    ],
+    organizer: [
+      ["MY TOURNAMENTS","Created by your account"],
+      ["APPROVED ENTRIES","Across your tournaments"],
+      ["TOTAL MATCHES","In your tournaments"],
+      ["LIVE MATCHES","Currently in progress"]
+    ],
+    scorer: [
+      ["ASSIGNED MATCHES","Assigned to your account"],
+      ["LIVE MATCHES","Assigned live matches"],
+      ["SCHEDULED","Assigned scheduled matches"],
+      ["COMPLETED","Assigned completed matches"]
+    ],
+    captain: [
+      ["MY TEAMS","Team data not loaded"],
+      ["TEAM MEMBERS","Team data not loaded"],
+      ["UPCOMING MATCHES","Fixture data not loaded"],
+      ["COMPLETED MATCHES","Match data not loaded"]
+    ],
+    player: [
+      ["MY TEAMS","Team data not loaded"],
+      ["TEAM MEMBERS","Team data not loaded"],
+      ["UPCOMING MATCHES","Fixture data not loaded"],
+      ["COMPLETED MATCHES","Match data not loaded"]
+    ]
+  };
+
+  function showMessage(message) {
+    toast.textContent = message;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 3500);
+  }
+
+  function setText(id, value) {
+    const element = $(id);
+    if (element) element.textContent = value;
+  }
+
+  function setStat(index, value, note) {
+    setText("statValue" + index, value);
+    if (note !== undefined) setText("statNote" + index, note);
+  }
+
+  function setStatLabels(role) {
+    const labels = ROLE_STATS[role];
+    labels.forEach((item, index) => {
+      setText("statLabel" + (index + 1), item[0]);
+      setText("statNote" + (index + 1), item[1]);
+    });
+  }
+
+  function openSidebar() {
+    sidebar.classList.add("open");
+    sidebarOverlay.classList.add("show");
+    menuToggle.setAttribute("aria-expanded", "true");
+  }
+
+  function closeSidebar() {
+    sidebar.classList.remove("open");
+    sidebarOverlay.classList.remove("show");
+    menuToggle.setAttribute("aria-expanded", "false");
+  }
+
+  menuToggle.addEventListener("click", () => {
+    sidebar.classList.contains("open") ? closeSidebar() : openSidebar();
+  });
+  sidebarOverlay.addEventListener("click", closeSidebar);
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") closeSidebar();
+  });
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 760) closeSidebar();
+  });
+
+  function prettyStatus(value) {
+    if (!value) return "Unknown";
+    return String(value).replaceAll("_", " ").replace(/\b\w/g, char => char.toUpperCase());
+  }
+
+  function formatDate(value) {
+    if (!value) return "Date not scheduled";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "Date not scheduled";
+    return date.toLocaleString("en-IN", {
+      day:"numeric",month:"short",year:"numeric",
+      hour:"numeric",minute:"2-digit"
+    });
+  }
+
+  function showError(container, message) {
+    container.replaceChildren();
+    const error = document.createElement("p");
+    error.className = "error-note";
+    error.textContent = message;
+    container.appendChild(error);
+  }
+
+  function showEmpty(container, title, description, linkText, linkHref) {
+    container.replaceChildren();
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "empty-state";
+
+    const icon = document.createElement("div");
+    icon.className = "empty-icon";
+    icon.textContent = "🏏";
+
+    const heading = document.createElement("h3");
+    heading.textContent = title;
+
+    const paragraph = document.createElement("p");
+    paragraph.textContent = description;
+
+    wrapper.append(icon, heading, paragraph);
+
+    if (linkText && linkHref) {
+      const link = document.createElement("a");
+      link.className = "primary-btn";
+      link.href = linkHref;
+      link.textContent = linkText;
+      wrapper.appendChild(link);
+    }
+
+    container.appendChild(wrapper);
+  }
+
+  function makeTournamentCard(tournament) {
+    const article = document.createElement("article");
+    article.className = "data-item";
+
+    const main = document.createElement("div");
+    main.className = "data-item-main";
+
+    const name = document.createElement("strong");
+    name.textContent = tournament.name || "Untitled tournament";
+
+    const detail = document.createElement("small");
+    detail.textContent =
+      prettyStatus(tournament.status) + " · " +
+      prettyStatus(tournament.format) + " · " +
+      (tournament.venue || "Venue not set");
+
+    const right = document.createElement("div");
+    right.style.display = "flex";
+    right.style.alignItems = "center";
+    right.style.gap = "12px";
+
+    const status = document.createElement("span");
+    status.className = "item-status";
+    status.textContent = prettyStatus(tournament.status);
+
+    const link = document.createElement("a");
+    link.href = "tournaments.html";
+    link.textContent = "Open →";
+
+    main.append(name, detail);
+    right.append(status, link);
+    article.append(main, right);
+    return article;
+  }
+
+  function makeMatchCard(match, tournamentName) {
+    const article = document.createElement("article");
+    article.className = "data-item";
+
+    const main = document.createElement("div");
+    main.className = "data-item-main";
+
+    const title = document.createElement("strong");
+    title.textContent = match.match_title || ("Match " + (match.match_number ?? ""));
+
+    const detail = document.createElement("small");
+    detail.textContent = (tournamentName || "Tournament") + " · " + formatDate(match.scheduled_at);
+
+    const right = document.createElement("div");
+    right.style.display = "flex";
+    right.style.alignItems = "center";
+    right.style.gap = "12px";
+
+    const status = document.createElement("span");
+    status.className = "item-status" + (match.status === "live" ? "" : " neutral");
+    status.textContent = prettyStatus(match.status);
+
+    const link = document.createElement("a");
+    link.href = "live-scoring.html";
+    link.textContent = "Open →";
+
+    main.append(title, detail);
+    right.append(status, link);
+    article.append(main, right);
+    return article;
+  }
+
+  function buildRoleLinks(role) {
+    const config = ROLE_CONFIG[role];
+    const quickActions = $("quickActions");
+    const operationLinks = $("operationLinks");
+
+    quickActions.replaceChildren();
+    operationLinks.replaceChildren();
+
+    config.actions.forEach(([icon, title, description, href]) => {
+      const card = document.createElement("a");
+      card.className = "action-card";
+      card.href = href;
+
+      const cardIcon = document.createElement("div");
+      cardIcon.className = "action-icon";
+      cardIcon.textContent = icon;
+
+      const heading = document.createElement("h3");
+      heading.textContent = title;
+
+      const paragraph = document.createElement("p");
+      paragraph.textContent = description;
+
+      card.append(cardIcon, heading, paragraph);
+      quickActions.appendChild(card);
+
+      const operation = document.createElement("a");
+      operation.className = "operation-link";
+      operation.href = href;
+
+      const operationIcon = document.createElement("span");
+      operationIcon.className = "operation-icon";
+      operationIcon.textContent = icon;
+
+      const operationText = document.createElement("span");
+      const operationTitle = document.createElement("strong");
+      operationTitle.textContent = title;
+      const operationDescription = document.createElement("small");
+      operationDescription.textContent = description;
+      operationText.append(operationTitle, operationDescription);
+
+      const arrow = document.createElement("span");
+      arrow.className = "operation-arrow";
+      arrow.textContent = "›";
+
+      operation.append(operationIcon, operationText, arrow);
+      operationLinks.appendChild(operation);
+    });
+  }
+
+  function applyRoleUI(role) {
+    const config = ROLE_CONFIG[role];
+
+    setText("userRole", config.label);
+    setText("accountRoleDetail", "Role: " + config.label);
+    setText("pageEyebrow", config.eyebrow);
+    $("pageTitle").textContent = config.title;
+    const titleDot = document.createElement("span");
+    titleDot.textContent = ".";
+    $("pageTitle").appendChild(titleDot);
+    setText("pageSubtitle", config.subtitle);
+    setText("primaryPanelTitle", config.panelTitle);
+    setText("primaryPanelSubtitle", config.panelSubtitle);
+    setText("controlTitle", role === "super_admin" ? "Admin Control Center" : config.label + " Workspace");
+    setText("controlDescription", "Open the tools available for your account role.");
+
+    setStatLabels(role);
+    buildRoleLinks(role);
+
+    document.querySelectorAll(".nav-link[data-roles]").forEach(link => {
+      const allowedRoles = link.dataset.roles.split(",");
+      link.classList.toggle("hidden", !allowedRoles.includes(role));
+    });
+
+    $("createTournamentButton").classList.toggle(
+      "hidden",
+      !["super_admin", "organizer"].includes(role)
+    );
+
+    $("primaryPanelLink").classList.toggle(
+      "hidden",
+      !["super_admin", "organizer"].includes(role)
+    );
+
+    if (role === "super_admin") {
+      setText("primaryPanelLink", "View →");
+      $("primaryPanelLink").href = "tournaments.html";
+    }
+  }
+
+  async function logout() {
+    const buttons = [$("logoutButton"), $("accountLogout")];
+    buttons.forEach(button => button.disabled = true);
+
+    const { error } = await db.auth.signOut();
+    buttons.forEach(button => button.disabled = false);
+
+    if (error) {
+      showMessage("Logout failed: " + error.message);
+      return;
+    }
+    window.location.replace("index.html");
+  }
+
+  $("logoutButton").addEventListener("click", logout);
+  $("accountLogout").addEventListener("click", logout);
+
+  async function loadOrganizerData(userId) {
+    const primary = $("primaryList");
+    const matchContainer = $("matchList");
+
+    primary.innerHTML = '<div class="loading">Loading your tournaments...</div>';
+    matchContainer.innerHTML = '<div class="loading">Loading your matches...</div>';
+
+    const tournamentResult = await db
+      .from("tournaments")
+      .select("id,name,format,status,venue,start_date,end_date,created_at")
+      .eq("organizer_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (tournamentResult.error) {
+      setStat(1, "!");
+      showError(primary, "Could not load your tournaments: " + tournamentResult.error.message);
+      setStat(2, "—");
+      setStat(3, "—");
+      setStat(4, "—");
+      showEmpty(matchContainer, "Matches unavailable", "Match records could not be retrieved for this account.", null, null);
+      return;
+    }
+
+    const tournaments = tournamentResult.data || [];
+    const tournamentIds = tournaments.map(item => item.id);
+    setStat(1, String(tournaments.length));
+
+    if (tournaments.length === 0) {
+      setStat(2, "0");
+      setStat(3, "0");
+      setStat(4, "0");
+      showEmpty(primary, "No tournaments yet", "You have not created a tournament with this account.", "CREATE TOURNAMENT", "tournaments.html");
+      showEmpty(matchContainer, "No matches yet", "Matches created in your tournaments will appear here.", null, null);
+      return;
+    }
+
+    primary.replaceChildren();
+    tournaments.forEach(item => primary.appendChild(makeTournamentCard(item)));
+
+    const registrationResult = await db
+      .from("team_registrations")
+      .select("id", { count: "exact", head: true })
+      .in("tournament_id", tournamentIds)
+      .eq("status", "approved");
+
+    setStat(2, registrationResult.error ? "—" : String(registrationResult.count || 0));
+
+    const matchResult = await db
+      .from("matches")
+      .select("id,tournament_id,match_number,match_title,scheduled_at,status,team1_id,team2_id")
+      .in("tournament_id", tournamentIds)
+      .order("scheduled_at", { ascending: false });
+
+    if (matchResult.error) {
+      setStat(3, "!");
+      setStat(4, "!");
+      showError(matchContainer, "Could not load matches: " + matchResult.error.message);
+      return;
+    }
+
+    const matches = matchResult.data || [];
+    setStat(3, String(matches.length));
+    setStat(4, String(matches.filter(match => match.status === "live").length));
+
+    if (!matches.length) {
+      showEmpty(matchContainer, "No matches scheduled", "Your tournament matches will appear here when fixtures have been created.", "OPEN FIXTURES", "fixtures.html");
+      return;
+    }
+
+    matchContainer.replaceChildren();
+    const names = new Map(tournaments.map(item => [item.id, item.name]));
+    matches.slice(0, 6).forEach(match => {
+      matchContainer.appendChild(makeMatchCard(match, names.get(match.tournament_id)));
+    });
+  }
+
+  async function loadScorerData(userId) {
+    const primary = $("primaryList");
+    const matchContainer = $("matchList");
+
+    primary.innerHTML = '<div class="loading">Loading your assigned matches...</div>';
+    matchContainer.innerHTML = '<div class="loading">Loading match information...</div>';
+
+    const assignmentResult = await db
+      .from("match_scorers")
+      .select("match_id")
+      .eq("scorer_id", userId);
+
+    if (assignmentResult.error) {
+      setStat(1, "!");
+      showError(primary, "Could not load scorer assignments: " + assignmentResult.error.message);
+      showEmpty(matchContainer, "Matches unavailable", "Your assigned match information could not be retrieved.", null, null);
+      return;
+    }
+
+    const matchIds = [...new Set((assignmentResult.data || []).map(item => item.match_id).filter(Boolean))];
+    setStat(1, String(matchIds.length));
+
+    if (!matchIds.length) {
+      setStat(2, "0");
+      setStat(3, "0");
+      setStat(4, "0");
+      showEmpty(primary, "No assigned matches", "Matches assigned to your scorer account will appear here.", "OPEN LIVE SCORING", "live-scoring.html");
+      showEmpty(matchContainer, "No match records", "There are no assigned match records to display.", null, null);
+      return;
+    }
+
+    const matchResult = await db
+      .from("matches")
+      .select("id,tournament_id,match_number,match_title,scheduled_at,status,team1_id,team2_id")
+      .in("id", matchIds)
+      .order("scheduled_at", { ascending: false });
+
+    if (matchResult.error) {
+      setStat(2, "—");
+      setStat(3, "—");
+      setStat(4, "—");
+      showError(primary, "Assignments were found, but match details could not be loaded: " + matchResult.error.message);
+      return;
+    }
+
+    const matches = matchResult.data || [];
+    setStat(2, String(matches.filter(match => match.status === "live").length));
+    setStat(3, String(matches.filter(match => match.status === "scheduled").length));
+    setStat(4, String(matches.filter(match => match.status === "completed").length));
+
+    const tournamentIds = [...new Set(matches.map(match => match.tournament_id).filter(Boolean))];
+    let tournamentNames = new Map();
+
+    if (tournamentIds.length) {
+      const tournamentResult = await db
+        .from("tournaments")
+        .select("id,name")
+        .in("id", tournamentIds);
+
+      if (!tournamentResult.error) {
+        tournamentNames = new Map((tournamentResult.data || []).map(item => [item.id, item.name]));
+      }
+    }
+
+    if (!matches.length) {
+      showEmpty(primary, "No visible match details", "Your assignments exist, but no match details are visible to this account.", null, null);
+      return;
+    }
+
+    primary.replaceChildren();
+    matches.forEach(match => {
+      primary.appendChild(makeMatchCard(match, tournamentNames.get(match.tournament_id)));
+    });
+
+    showEmpty(matchContainer, "Assigned matches shown above", "Open an assigned match from your list to continue to the scoring workspace.", "OPEN LIVE SCORING", "live-scoring.html");
+  }
+
+  async function loadSuperAdminData() {
+    const primary = $("primaryList");
+    const matchContainer = $("matchList");
+
+    primary.innerHTML = '<div class="loading">Loading accessible tournaments...</div>';
+    matchContainer.innerHTML = '<div class="loading">Loading accessible matches...</div>';
+
+    const tournamentResult = await db
+      .from("tournaments")
+      .select("id,name,format,status,venue,created_at")
+      .order("created_at", { ascending: false });
+
+    if (tournamentResult.error) {
+      setStat(1, "!");
+      showError(primary, "Could not load tournaments visible to this account: " + tournamentResult.error.message);
+    } else {
+      const tournaments = tournamentResult.data || [];
+      setStat(1, String(tournaments.length));
+
+      if (!tournaments.length) {
+        showEmpty(primary, "No accessible tournaments", "No tournament records are currently visible to this account.", null, null);
+      } else {
+        primary.replaceChildren();
+        tournaments.slice(0, 8).forEach(item => primary.appendChild(makeTournamentCard(item)));
+      }
+    }
+
+    const matchResult = await db
+      .from("matches")
+      .select("id,tournament_id,match_number,match_title,scheduled_at,status,team1_id,team2_id")
+      .order("scheduled_at", { ascending: false });
+
+    if (matchResult.error) {
+      setStat(2, "—");
+      setStat(3, "—");
+      setStat(4, "—");
+      showError(matchContainer, "Could not load matches visible to this account: " + matchResult.error.message);
+      return;
+    }
+
+    const matches = matchResult.data || [];
+    setStat(2, String(matches.length));
+    setStat(3, String(matches.filter(match => match.status === "live").length));
+    setStat(4, "Verified");
+
+    if (!matches.length) {
+      showEmpty(matchContainer, "No accessible matches", "No match records are currently visible to this account.", null, null);
+      return;
+    }
+
+    const tournamentIds = [...new Set(matches.map(match => match.tournament_id).filter(Boolean))];
+    let tournamentNames = new Map();
+
+    if (tournamentIds.length) {
+      const namesResult = await db.from("tournaments").select("id,name").in("id", tournamentIds);
+      if (!namesResult.error) {
+        tournamentNames = new Map((namesResult.data || []).map(item => [item.id, item.name]));
+      }
+    }
+
+    matchContainer.replaceChildren();
+    matches.slice(0, 6).forEach(match => {
+      matchContainer.appendChild(makeMatchCard(match, tournamentNames.get(match.tournament_id)));
+    });
+  }
+
+  function loadTeamRoleEmptyState(role) {
+    const isCaptain = role === "captain";
+    const primary = $("primaryList");
+    const matchContainer = $("matchList");
+
+    showEmpty(
+      primary,
+      isCaptain ? "Your team workspace" : "Your player workspace",
+      "Your account is recognised as a " + ROLE_CONFIG[role].label.toLowerCase() +
+      ". Team and membership details will appear here when they are linked and accessible in the database.",
+      isCaptain ? "OPEN TEAM MANAGEMENT" : "VIEW TEAMS",
+      "teams.html"
+    );
+
+    showEmpty(
+      matchContainer,
+      "Match information",
+      "Your fixtures and match information can be opened from the Fixtures page.",
+      "OPEN FIXTURES",
+      "fixtures.html"
+    );
+
+    [1,2,3,4].forEach(index => setStat(index, "—", "Awaiting linked team data"));
+  }
+
+  async function loadDashboard(user) {
+    const displayName =
+      user.user_metadata?.full_name ||
+      user.user_metadata?.name ||
+      user.email?.split("@")[0] ||
+      "WICKETRA User";
+
+    setText("userName", displayName);
+    setText("userAvatar", displayName.charAt(0).toUpperCase());
+    setText("accountEmail", user.email || "Email not available");
+
+    const profileResult = await db
+      .from("profiles")
+      .select("full_name,role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profileResult.error || !profileResult.data || !profileResult.data.role) {
+      setText("userRole", "Role not verified");
+      setText("accountRoleDetail", "Role: Not verified");
+      showError(
+        $("primaryList"),
+        "WICKETRA could not verify your role from the profiles table. Please contact the platform administrator. Do not change your role from this page."
+      );
+      showEmpty($("matchList"), "Dashboard data unavailable", "Your dashboard is restricted until your account role can be verified.", null, null);
+      [1,2,3,4].forEach(index => setStat(index, "—", "Role verification required"));
+      $("quickActions").replaceChildren();
+      $("operationLinks").replaceChildren();
+      $("createTournamentButton").classList.add("hidden");
+      return;
+    }
+
+    const profile = profileResult.data;
+    const role = String(profile.role).trim().toLowerCase();
+
+    if (!ROLE_CONFIG[role]) {
+      setText("userRole", prettyStatus(role));
+      setText("accountRoleDetail", "Role: " + prettyStatus(role));
+      showError($("primaryList"), "Your account has a role that this dashboard does not currently recognise. Contact the platform administrator.");
+      showEmpty($("matchList"), "Dashboard access restricted", "No role-specific dashboard has been configured for this account.", null, null);
+      [1,2,3,4].forEach(index => setStat(index, "—", "Role not configured"));
+      return;
+    }
+
+    if (profile.full_name) {
+      setText("userName", profile.full_name);
+      setText("userAvatar", profile.full_name.charAt(0).toUpperCase());
+    }
+
+    applyRoleUI(role);
+
+    // Load only data appropriate to the verified role.
+    if (role === "organizer") {
+      await loadOrganizerData(user.id);
+    } else if (role === "scorer") {
+      await loadScorerData(user.id);
+    } else if (role === "super_admin") {
+      await loadSuperAdminData();
+    } else {
+      loadTeamRoleEmptyState(role);
+    }
+  }
+
+  async function init() {
+    const { data, error } = await db.auth.getSession();
+
+    if (error || !data.session) {
+      window.location.replace("index.html#login");
+      return;
+    }
+
+    await loadDashboard(data.session.user);
+  }
+
+  db.auth.onAuthStateChange(event => {
+    if (event === "SIGNED_OUT") {
+      window.location.replace("index.html#login");
+    }
+  });
+
+  init();
+})();
+</script>
+</body>
+</html>

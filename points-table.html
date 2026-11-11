@@ -1,0 +1,568 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080c0b">
+<title>Points Table | WICKETRA</title>
+<meta name="description" content="Tournament standings and verified cricket results on WICKETRA.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root{--bg:#080c0b;--sidebar:#0c1210;--panel:#101715;--panel2:#151e1a;--green:#22c55e;--light:#4ade80;--text:#f4f7f5;--muted:#84918a;--border:rgba(255,255,255,.08);--yellow:#facc15;--red:#f87171}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif}
+a{color:inherit;text-decoration:none}
+button,select{font:inherit}
+button{cursor:pointer}
+.sidebar{width:245px;position:fixed;inset:0 auto 0 0;z-index:30;display:flex;flex-direction:column;padding:27px 18px;background:var(--sidebar);border-right:1px solid var(--border);transition:transform .25s}
+.logo{margin:0 0 38px 10px;font:800 31px 'Barlow Condensed',sans-serif;letter-spacing:1px}
+.logo span{color:var(--green)}
+.side-label{margin:25px 10px 12px;color:#64716a;font-size:10px;font-weight:800;letter-spacing:2px}
+.nav-link{display:flex;align-items:center;gap:13px;margin:4px 0;padding:13px 14px;border:1px solid transparent;border-radius:9px;color:#9ba79f;font-size:13px;transition:.2s}
+.nav-link:hover,.nav-link.active{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.08);color:var(--light)}
+.nav-icon{width:20px;text-align:center}
+.sidebar-bottom{margin-top:auto;padding-top:20px;border-top:1px solid var(--border)}
+.main{min-height:100vh;max-width:1700px;margin-left:245px;padding:30px 38px 35px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:38px}
+.topbar-left{display:flex;align-items:center;gap:13px}
+.breadcrumb{color:var(--muted);font-size:12px}
+.breadcrumb strong{color:white}
+.profile{display:flex;align-items:center;gap:11px;font-size:12px}
+.avatar{width:39px;height:39px;display:grid;place-items:center;border:1px solid rgba(34,197,94,.2);border-radius:50%;background:#173321;color:var(--green);font-weight:800}
+.muted{margin-top:3px;color:var(--muted);font-size:10px}
+.menu-toggle{display:none;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--panel2);color:white}
+.welcome{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:27px}
+.eyebrow{margin-bottom:8px;color:var(--green);font-size:10px;font-weight:800;letter-spacing:2.5px}
+h1,h2,h3{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase}
+h1{font-size:clamp(36px,4vw,48px);line-height:1.05}
+h1 span{color:var(--green)}
+.subtitle{max-width:650px;margin-top:9px;color:var(--muted);font-size:12px;line-height:1.8}
+.panel{margin-bottom:20px;padding:23px;border:1px solid var(--border);border-radius:13px;background:var(--panel)}
+.panel-heading{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:20px}
+.panel-heading h2{font-size:24px}
+.panel-heading p{margin-top:5px;color:var(--muted);font-size:11px;line-height:1.6}
+.status{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border:1px solid var(--border);border-radius:30px;background:#1b2720;color:#aab5ad;font-size:10px;white-space:nowrap}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--yellow)}
+.status-dot.good{background:var(--green)}
+.status-dot.bad{background:var(--red)}
+.selector-area{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:13px;margin-bottom:20px}
+.selector-field{display:flex;flex-direction:column;gap:8px}
+.selector-field label{color:#b8c4bc;font-size:11px;font-weight:700}
+select{width:100%;min-height:44px;padding:11px 13px;border:1px solid var(--border);border-radius:8px;outline:none;background:#0b110e;color:white;font-size:12px}
+select:focus{border-color:var(--green)}
+select option{background:#101715}
+.table-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.table-title h3{font-size:22px}
+.table-title span{color:var(--muted);font-size:10px}
+.table-wrap{width:100%;overflow-x:auto;border:1px solid var(--border);border-radius:10px}
+table{width:100%;min-width:920px;border-collapse:collapse;text-align:left}
+thead{background:#151e1a}
+th{padding:15px 12px;border-bottom:1px solid var(--border);color:#89978e;font-size:10px;font-weight:800;letter-spacing:1px;white-space:nowrap}
+td{padding:15px 12px;border-bottom:1px solid var(--border);color:#c5d0c8;font-size:12px;white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+.pos{width:45px;color:var(--muted);font-weight:800}
+.team-cell{display:flex;align-items:center;gap:11px;min-width:180px}
+.team-logo{width:34px;height:34px;flex-shrink:0;display:grid;place-items:center;overflow:hidden;border:1px solid var(--border);border-radius:9px;background:var(--panel2);color:var(--green);font-size:11px;font-weight:800}
+.team-logo img{width:100%;height:100%;object-fit:contain}
+.team-name{color:var(--text);font-weight:700}
+.points{color:var(--green);font-size:14px;font-weight:800}
+.nrr-positive{color:var(--green);font-weight:700}
+.nrr-negative{color:var(--red);font-weight:700}
+.form-list{display:flex;align-items:center;gap:4px}
+.form-result{width:21px;height:21px;display:grid;place-items:center;border-radius:5px;font-size:9px;font-weight:800}
+.form-result.win{background:rgba(34,197,94,.15);color:var(--light)}
+.form-result.loss{background:rgba(248,113,113,.13);color:var(--red)}
+.form-result.draw{background:rgba(250,204,21,.12);color:var(--yellow)}
+.form-result.nr{background:#27312b;color:#b4c0b8}
+.qualification{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:5px;background:rgba(34,197,94,.1);color:var(--light);font-size:9px;font-weight:800}
+.not-qualified{color:var(--muted);font-size:10px}
+.empty-table{padding:42px 20px;text-align:center}
+.empty-icon{width:55px;height:55px;display:grid;place-items:center;margin:0 auto 14px;border:1px solid rgba(34,197,94,.2);border-radius:15px;background:rgba(34,197,94,.08);color:var(--green);font-size:23px}
+.empty-table h3{margin-bottom:7px;font-size:23px}
+.empty-table p{max-width:440px;margin:auto;color:var(--muted);font-size:11px;line-height:1.8}
+.legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:15px;color:var(--muted);font-size:10px}
+.legend-item{display:flex;align-items:center;gap:7px}
+.legend-box{width:9px;height:9px;border-radius:2px;background:var(--green)}
+.notice{margin-top:18px;padding:14px 15px;border:1px solid rgba(34,197,94,.2);border-radius:9px;background:rgba(34,197,94,.06);color:#a9c9b2;font-size:11px;line-height:1.8}
+.ranking-grid,.rules-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.ranking-card,.rule-card{padding:17px;border:1px solid var(--border);border-radius:10px;background:#0c1310}
+.ranking-icon{margin-bottom:12px;color:var(--green);font-size:21px}
+.ranking-card h3,.rule-card h3{margin-bottom:6px;font-size:20px}
+.ranking-card p,.rule-card p{color:var(--muted);font-size:10px;line-height:1.7}
+.footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:15px;margin-top:30px;padding-top:20px;border-top:1px solid var(--border);color:#68756d;font-size:10px}
+.footer-links{display:flex;flex-wrap:wrap;gap:16px}
+.footer a:hover{color:var(--light)}
+.message{padding:15px;color:var(--muted);font-size:12px;text-align:center}
+.error-message{color:var(--red)}
+.sidebar-overlay{display:none}
+@media(max-width:1100px){.main{padding:25px 24px 35px}.ranking-grid,.rules-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:900px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.sidebar-overlay.show{display:block;position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.65)}.main{margin-left:0;padding:22px 18px 30px}.menu-toggle{display:inline-flex}.profile-info{display:none}}
+@media(max-width:600px){.main{padding:17px 13px 25px}.topbar{margin-bottom:29px}.welcome{align-items:flex-start;flex-direction:column}.panel{padding:16px}.panel-heading{align-items:flex-start;flex-direction:column}.selector-area{grid-template-columns:1fr}.ranking-grid,.rules-grid{grid-template-columns:1fr}.footer{flex-direction:column}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important}}
+</style>
+</head>
+
+<body>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+<a class="logo" href="dashboard.html">WICKET<span>RA</span></a>
+<div class="side-label">MAIN MENU</div>
+<a class="nav-link" href="dashboard.html"><span class="nav-icon">⌂</span> Overview</a>
+<a class="nav-link" href="tournaments.html"><span class="nav-icon">🏆</span> Tournaments</a>
+<a class="nav-link" href="teams.html"><span class="nav-icon">👥</span> Teams &amp; Players</a>
+<a class="nav-link" href="fixtures.html"><span class="nav-icon">▦</span> Fixtures</a>
+<a class="nav-link" href="live-scoring.html"><span class="nav-icon">🏏</span> Live Scoring</a>
+<a class="nav-link active" href="points-table.html" aria-current="page"><span class="nav-icon">📊</span> Points &amp; Rankings</a>
+<div class="side-label">MANAGEMENT</div>
+<a class="nav-link" href="notifications.html"><span class="nav-icon">♢</span> Notifications</a>
+<a class="nav-link" href="reports.html"><span class="nav-icon">▧</span> Match Reports</a>
+<div class="sidebar-bottom"><a class="nav-link" href="index.html">↗ Visit Website</a></div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+<div class="topbar-left">
+<button class="menu-toggle" id="menuToggle" type="button" aria-label="Open navigation" aria-expanded="false">☰</button>
+<div class="breadcrumb">WICKETRA / <strong>Points &amp; Rankings</strong></div>
+</div>
+<div class="profile">
+<div class="avatar" id="profileAvatar">W</div>
+<div class="profile-info">
+<strong id="profileName">Loading account...</strong>
+<div class="muted" id="profileRole">Organizer workspace</div>
+</div>
+</div>
+</header>
+
+<section class="welcome">
+<div>
+<div class="eyebrow">TOURNAMENT STATISTICS</div>
+<h1>POINTS TABLE<span>.</span></h1>
+<p class="subtitle">Follow team standings, points, net run rate and recent form using recorded tournament results.</p>
+</div>
+</section>
+
+<section class="panel">
+<div class="panel-heading">
+<div>
+<h2>TOURNAMENT STANDINGS</h2>
+<p>Standings are generated from approved registrations and completed match records.</p>
+</div>
+<span class="status" id="connectionStatus"><span class="status-dot" id="connectionDot"></span><span id="connectionText">CONNECTING</span></span>
+</div>
+
+<div class="selector-area">
+<div class="selector-field">
+<label for="tournamentSelect">SELECT TOURNAMENT</label>
+<select id="tournamentSelect"><option value="">Loading tournaments...</option></select>
+</div>
+<div class="selector-field">
+<label for="stageSelect">TOURNAMENT STAGE</label>
+<select id="stageSelect">
+<option value="all">All stages</option>
+<option value="league">League stage</option>
+<option value="group">Group stage</option>
+<option value="knockout">Knockout stage</option>
+</select>
+</div>
+</div>
+
+<div class="table-title">
+<h3>TEAM STANDINGS</h3>
+<span id="standingsCount">WAITING FOR DATA</span>
+</div>
+
+<div class="table-wrap">
+<table aria-label="Tournament points table">
+<thead>
+<tr><th>POS</th><th>TEAM</th><th>P</th><th>W</th><th>L</th><th>T</th><th>NR</th><th>PTS</th><th>NRR</th><th>LAST 5</th><th>STATUS</th></tr>
+</thead>
+<tbody id="standingsBody">
+<tr><td colspan="11"><div class="empty-table"><div class="empty-icon">🏆</div><h3>LOADING STANDINGS</h3><p>Retrieving tournament records from WICKETRA.</p></div></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="legend">
+<div class="legend-item"><span class="legend-box"></span> Qualification position</div>
+<div class="legend-item"><span class="form-result win">W</span> Win</div>
+<div class="legend-item"><span class="form-result loss">L</span> Loss</div>
+<div class="legend-item"><span class="form-result draw">T</span> Tie</div>
+<div class="legend-item"><span class="form-result nr">NR</span> No result</div>
+</div>
+
+<div class="notice" id="standingsNotice">
+Points currently use the standard calculation of 2 points for a win, 1 for a tie or no result, and 0 for a loss. Confirm your tournament's configured rules before treating these as official standings. NRR is calculated only when the innings records contain sufficient data.
+</div>
+</section>
+
+<section class="panel">
+<div class="panel-heading">
+<div><h2>PLAYER RANKINGS</h2><p>Player performance rankings require verified scorecards and an authorized player identity lookup.</p></div>
+</div>
+<div class="ranking-grid">
+<div class="ranking-card"><div class="ranking-icon">🏏</div><h3>TOP BATTERS</h3><p>Batting rankings will be available when verified player scorecards can be securely linked to player identities.</p></div>
+<div class="ranking-card"><div class="ranking-icon">🎯</div><h3>TOP BOWLERS</h3><p>Bowling rankings will be available when verified player scorecards can be securely linked to player identities.</p></div>
+<div class="ranking-card"><div class="ranking-icon">⚡</div><h3>ALL-ROUNDERS</h3><p>Combined performance rankings require complete batting and bowling scorecard data.</p></div>
+</div>
+<div class="empty-table"><h3>PLAYER RANKINGS NOT CONNECTED</h3><p>No player ranking figures are published until the required verified data is available.</p></div>
+</section>
+
+<section class="panel">
+<div class="panel-heading"><div><h2>POINTS TABLE RULES</h2><p>Competition rules can vary by tournament.</p></div></div>
+<div class="rules-grid">
+<div class="rule-card"><h3>POINTS SYSTEM</h3><p>The current display uses 2 points for a win, 1 for a tie or no result, and 0 for a loss. Tournament-specific rules need to be applied before official publication.</p></div>
+<div class="rule-card"><h3>NET RUN RATE</h3><p>NRR requires reliable innings totals and legal-ball counts. Incomplete or missing innings data is not treated as a verified NRR.</p></div>
+<div class="rule-card"><h3>QUALIFICATION</h3><p>Qualification positions depend on the tournament format and configured qualification rules. No qualification status is assumed by this page.</p></div>
+</div>
+<div class="notice">Corrections to match results should trigger a fresh standings calculation. Only completed match records are considered.</div>
+</section>
+
+<footer class="footer">
+<span>© 2026 WICKETRA. THE PULSE OF EVERY BALL.</span>
+<div class="footer-links">
+<a href="about.html">About</a><a href="contact.html">Contact</a><a href="privacy-policy.html">Privacy</a><a href="terms.html">Terms</a>
+</div>
+</footer>
+</main>
+
+<script>
+const SUPABASE_URL = "https://ywehjzrajdokbzvvnsfk.supabase.co";
+const SUPABASE_KEY = "sb_publishable_TXW4VKa-8hdrigWVzju6bA_5fQh19nj";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const $ = id => document.getElementById(id);
+const sidebar = $("sidebar");
+const menuToggle = $("menuToggle");
+const overlay = $("sidebarOverlay");
+
+function openMenu(){
+  sidebar.classList.add("open");
+  overlay.classList.add("show");
+  menuToggle.setAttribute("aria-expanded","true");
+}
+function closeMenu(){
+  sidebar.classList.remove("open");
+  overlay.classList.remove("show");
+  menuToggle.setAttribute("aria-expanded","false");
+}
+menuToggle.addEventListener("click",()=>sidebar.classList.contains("open")?closeMenu():openMenu());
+overlay.addEventListener("click",closeMenu);
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeMenu();});
+sidebar.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>{if(innerWidth<=900)closeMenu();}));
+
+let currentUser = null;
+let tournamentCache = [];
+let teamCache = [];
+let matchCache = [];
+let inningsCache = [];
+let rulesCache = null;
+
+function setConnection(message,type="pending"){
+  $("connectionText").textContent=message;
+  $("connectionDot").className="status-dot"+(type==="good"?" good":type==="bad"?" bad":"");
+}
+
+function escapeHTML(value){
+  return String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+}
+
+function showMessage(title,message,isError=false){
+  $("standingsBody").innerHTML=`<tr><td colspan="11"><div class="empty-table"><div class="empty-icon">${isError?"!":"🏆"}</div><h3>${escapeHTML(title)}</h3><p class="${isError?"error-message":""}">${escapeHTML(message)}</p></div></td></tr>`;
+  $("standingsCount").textContent="NO STANDINGS";
+}
+
+function stageMatches(match,stage){
+  if(stage==="all")return true;
+  const value=String(match.stage||"").toLowerCase();
+  if(stage==="league")return value.includes("league");
+  if(stage==="group")return value.includes("group");
+  if(stage==="knockout")return value.includes("knockout")||value.includes("semi")||value.includes("final");
+  return true;
+}
+
+function resultType(match){
+  if(match.winner_team_id)return "win";
+  const summary=String(match.result_summary||"").toLowerCase();
+  if(/\b(no result|abandoned|washed out|cancelled)\b/.test(summary))return "nr";
+  if(/\b(tie|tied|draw)\b/.test(summary))return "tie";
+  return "unknown";
+}
+
+function emptyStats(team){
+  return {team,played:0,wins:0,losses:0,ties:0,noResults:0,points:0,form:[],runsFor:0,oversFor:0,runsAgainst:0,oversAgainst:0,nrrAvailable:true};
+}
+
+function inningsOvers(innings,quota){
+  const balls=Number(innings.legal_balls||0);
+  if(!balls)return 0;
+  const wickets=Number(innings.wickets||0);
+  const allOut=wickets>=10;
+  const quotaBalls=Number(quota||0)*6;
+  const usedBalls=allOut&&quotaBalls>0?quotaBalls:balls;
+  return usedBalls/6;
+}
+
+function calculateNRR(stats,teamId,matchIds,inningsByMatch,quota){
+  for(const matchId of matchIds){
+    const innings=inningsByMatch[matchId]||[];
+    const batting=innings.filter(i=>i.batting_team_id===teamId);
+    const bowling=innings.filter(i=>i.bowling_team_id===teamId);
+    if(!batting.length||!bowling.length){
+      stats.nrrAvailable=false;
+      continue;
+    }
+    for(const i of batting){
+      const overs=inningsOvers(i,quota);
+      if(overs<=0){stats.nrrAvailable=false;continue;}
+      stats.runsFor+=Number(i.total_runs||0);
+      stats.oversFor+=overs;
+    }
+    for(const i of bowling){
+      const overs=inningsOvers(i,quota);
+      if(overs<=0){stats.nrrAvailable=false;continue;}
+      stats.runsAgainst+=Number(i.total_runs||0);
+      stats.oversAgainst+=overs;
+    }
+  }
+}
+
+function renderStandings(){
+  const selectedStage=$("stageSelect").value;
+  const selectedMatches=matchCache.filter(m=>stageMatches(m,selectedStage));
+  const stats=new Map();
+
+  teamCache.forEach(team=>stats.set(team.id,emptyStats(team)));
+
+  const inningsByMatch={};
+  inningsCache.forEach(i=>{
+    if(!inningsByMatch[i.match_id])inningsByMatch[i.match_id]=[];
+    inningsByMatch[i.match_id].push(i);
+  });
+
+  const matchIdsByTeam=new Map();
+  selectedMatches.forEach(match=>{
+    const team1=match.team1_id;
+    const team2=match.team2_id;
+    if(!team1||!team2)return;
+    if(!stats.has(team1)||!stats.has(team2))return;
+
+    const a=stats.get(team1);
+    const b=stats.get(team2);
+    a.played++;b.played++;
+
+    const result=resultType(match);
+    if(result==="win"){
+      const winner=match.winner_team_id;
+      const loser=winner===team1?team2:team1;
+      if(winner===team1){a.wins++;a.points+=2;b.losses++;}
+      else if(winner===team2){b.wins++;b.points+=2;a.losses++;}
+      else {a.noResults++;b.noResults++;a.points++;b.points++;}
+      a.form.push(winner===team1?"W":"L");
+      b.form.push(winner===team2?"W":"L");
+    }else if(result==="tie"){
+      a.ties++;b.ties++;a.points++;b.points++;
+      a.form.push("T");b.form.push("T");
+    }else if(result==="nr"){
+      a.noResults++;b.noResults++;a.points++;b.points++;
+      a.form.push("NR");b.form.push("NR");
+    }else{
+      // A completed match without a recognized result is not assigned points.
+      a.form.push("?");b.form.push("?");
+    }
+
+    if(!matchIdsByTeam.has(team1))matchIdsByTeam.set(team1,[]);
+    if(!matchIdsByTeam.has(team2))matchIdsByTeam.set(team2,[]);
+    matchIdsByTeam.get(team1).push(match.id);
+    matchIdsByTeam.get(team2).push(match.id);
+  });
+
+  const selectedTournament=tournamentCache.find(t=>t.id===$("tournamentSelect").value);
+  const quota=selectedTournament?.overs_per_innings||0;
+
+  stats.forEach((item,teamId)=>{
+    calculateNRR(item,teamId,matchIdsByTeam.get(teamId)||[],inningsByMatch,quota);
+    item.nrr=(item.nrrAvailable&&item.oversFor>0&&item.oversAgainst>0)
+      ?(item.runsFor/item.oversFor)-(item.runsAgainst/item.oversAgainst)
+      :null;
+    item.form=item.form.slice(-5);
+  });
+
+  const rows=[...stats.values()].sort((a,b)=>{
+    if(b.points!==a.points)return b.points-a.points;
+    if(a.nrr!==null&&b.nrr!==null&&b.nrr!==a.nrr)return b.nrr-a.nrr;
+    if(a.nrr!==null&&b.nrr===null)return -1;
+    if(a.nrr===null&&b.nrr!==null)return 1;
+    return b.wins-a.wins;
+  });
+
+  if(!rows.length){
+    showMessage("NO APPROVED TEAMS","Approved tournament registrations will appear here.");
+    return;
+  }
+
+  const completed=selectedMatches.length;
+  $("standingsCount").textContent=`${rows.length} TEAMS · ${completed} COMPLETED MATCHES`;
+
+  $("standingsBody").innerHTML=rows.map((s,index)=>{
+    const team=s.team;
+    const initials=(team.short_name||team.name||"T").slice(0,3).toUpperCase();
+    const logo=team.logo_url
+      ?`<img src="${escapeHTML(team.logo_url)}" alt="" onerror="this.remove()">`
+      :escapeHTML(initials);
+    const nrr=s.nrr===null?"—":`${s.nrr>0?"+":""}${s.nrr.toFixed(3)}`;
+    const nrrClass=s.nrr===null?"":s.nrr>=0?"nrr-positive":"nrr-negative";
+    const form=s.form.length?s.form.map(x=>{
+      const cls=x==="W"?"win":x==="L"?"loss":x==="T"?"draw":x==="NR"?"nr":"";
+      return `<span class="form-result ${cls}" title="${escapeHTML(x)}">${escapeHTML(x)}</span>`;
+    }).join(""):"—";
+    return `<tr>
+      <td class="pos">${index+1}</td>
+      <td><div class="team-cell"><div class="team-logo">${logo}</div><div class="team-name">${escapeHTML(team.name)}</div></div></td>
+      <td>${s.played}</td><td>${s.wins}</td><td>${s.losses}</td><td>${s.ties}</td><td>${s.noResults}</td>
+      <td class="points">${s.points}</td><td class="${nrrClass}">${nrr}</td>
+      <td><div class="form-list">${form}</div></td>
+      <td><span class="not-qualified">Not configured</span></td>
+    </tr>`;
+  }).join("");
+
+  if(!completed){
+    $("standingsNotice").textContent="No completed matches have been recorded for this tournament yet. Teams are listed with zero played matches. Points use the standard display calculation and should be checked against the tournament's configured rules.";
+  }else{
+    $("standingsNotice").textContent="Standings use completed match records. Points shown are calculated as 2 for a win, 1 for a tie or no result, and 0 for a loss. This page does not yet read tournament-specific points settings or qualification spots. NRR is shown only where innings data is sufficient.";
+  }
+}
+
+async function loadTournamentData(tournamentId){
+  if(!tournamentId){
+    teamCache=[];matchCache=[];inningsCache=[];
+    showMessage("SELECT A TOURNAMENT","Choose a tournament to view its standings.");
+    return;
+  }
+
+  showMessage("LOADING STANDINGS","Fetching approved teams and completed match results.");
+  const [registrationsResult,matchesResult]=await Promise.all([
+    db.from("team_registrations").select("team_id").eq("tournament_id",tournamentId).eq("status","approved"),
+    db.from("matches").select("id,tournament_id,match_number,stage,team1_id,team2_id,status,result_summary,winner_team_id").eq("tournament_id",tournamentId).eq("status","completed")
+  ]);
+
+  if(registrationsResult.error)throw registrationsResult.error;
+  if(matchesResult.error)throw matchesResult.error;
+
+  const teamIds=[...new Set((registrationsResult.data||[]).map(r=>r.team_id).filter(Boolean))];
+  matchCache=matchesResult.data||[];
+
+  if(!teamIds.length){
+    teamCache=[];inningsCache=[];
+    renderStandings();
+    return;
+  }
+
+  const teamsResult=await db.from("teams").select("id,name,short_name,logo_url").in("id",teamIds);
+  if(teamsResult.error)throw teamsResult.error;
+  teamCache=teamsResult.data||[];
+
+  const matchIds=matchCache.map(m=>m.id);
+  if(matchIds.length){
+    const inningsResult=await db.from("innings")
+      .select("match_id,innings_number,batting_team_id,bowling_team_id,total_runs,wickets,legal_balls,status")
+      .in("match_id",matchIds);
+    if(inningsResult.error){
+      console.warn("Innings data could not be loaded:",inningsResult.error.message);
+      inningsCache=[];
+    }else{
+      inningsCache=inningsResult.data||[];
+    }
+  }else{
+    inningsCache=[];
+  }
+
+  renderStandings();
+}
+
+async function loadPage(){
+  setConnection("CONNECTING");
+  const {data:{session},error:sessionError}=await db.auth.getSession();
+
+  if(sessionError)throw sessionError;
+  if(!session){
+    window.location.replace("index.html#login");
+    return;
+  }
+
+  currentUser=session.user;
+
+  const {data:profile,error:profileError}=await db.from("profiles")
+    .select("full_name,role")
+    .eq("id",currentUser.id)
+    .maybeSingle();
+
+  if(profileError)console.warn("Profile could not be loaded:",profileError.message);
+
+  const name=profile?.full_name||"WICKETRA USER";
+  $("profileName").textContent=name;
+  $("profileRole").textContent=profile?.role?`${profile.role.replaceAll("_"," ")} workspace`:"Account";
+  $("profileAvatar").textContent=name.trim().charAt(0).toUpperCase()||"W";
+
+  const {data:tournaments,error}=await db.from("tournaments")
+    .select("id,name,format,status,overs_per_innings")
+    .order("created_at",{ascending:false});
+
+  if(error)throw error;
+
+  tournamentCache=tournaments||[];
+  const select=$("tournamentSelect");
+
+  if(!tournamentCache.length){
+    select.innerHTML='<option value="">No tournaments available</option>';
+    showMessage("NO TOURNAMENTS FOUND","Create a tournament or check whether your account can view tournament records.");
+    setConnection("CONNECTED","good");
+    return;
+  }
+
+  select.innerHTML='<option value="">Choose a tournament</option>'+
+    tournamentCache.map(t=>`<option value="${escapeHTML(t.id)}">${escapeHTML(t.name)}</option>`).join("");
+
+  const params=new URLSearchParams(window.location.search);
+  const requested=params.get("tournament");
+  const initial=tournamentCache.some(t=>t.id===requested)?requested:tournamentCache[0].id;
+  select.value=initial;
+
+  await loadTournamentData(initial);
+  setConnection("CONNECTED","good");
+}
+
+$("tournamentSelect").addEventListener("change",async()=>{
+  try{
+    await loadTournamentData($("tournamentSelect").value);
+  }catch(error){
+    console.error(error);
+    showMessage("COULD NOT LOAD STANDINGS",error.message||"Please check your Supabase table permissions.",true);
+    setConnection("DATA ERROR","bad");
+  }
+});
+
+$("stageSelect").addEventListener("change",renderStandings);
+
+db.auth.onAuthStateChange((event,session)=>{
+  if(event==="SIGNED_OUT"||!session){
+    window.location.replace("index.html#login");
+  }
+});
+
+loadPage().catch(error=>{
+  console.error("WICKETRA points table:",error);
+  setConnection("CONNECTION ERROR","bad");
+  showMessage("UNABLE TO LOAD DATA",error.message||"Check your Supabase connection and table permissions.",true);
+});
+</script>
+</body>
+</html>

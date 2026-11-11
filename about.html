@@ -1,0 +1,377 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Discover WICKETRA's mission to simplify cricket tournament management through organized tournament, team, fixture and scoring tools.">
+<meta name="theme-color" content="#080b09">
+
+<title>About Us | WICKETRA</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+
+<style>
+.about-page {
+  padding:100px 0 120px;
+  min-height:70vh;
+}
+.about-container {
+  max-width:1050px;
+  width:87.6%;
+  margin:auto;
+}
+.about-label {
+  color:var(--green);
+  letter-spacing:3px;
+  font-size:10px;
+  font-weight:800;
+}
+.about-page h1 {
+  font:900 clamp(58px,8vw,100px)/.95 var(--display);
+  margin:25px 0;
+  letter-spacing:-1px;
+}
+.about-page h1 span,
+.about-section h2 span,
+.about-vision h2 span {
+  color:var(--green);
+}
+.about-intro {
+  color:#aab7ac;
+  font-size:16px;
+  line-height:2;
+  max-width:780px;
+}
+.about-divider {
+  height:1px;
+  background:var(--line);
+  margin:65px 0;
+}
+.about-section {
+  margin-top:65px;
+}
+.about-section h2,
+.about-vision h2 {
+  font:800 clamp(36px,5vw,55px)/1 var(--display);
+  margin:18px 0 25px;
+}
+.about-section>p {
+  color:#aab7ac;
+  font-size:13px;
+  line-height:2;
+  max-width:850px;
+  margin-bottom:15px;
+}
+.about-features {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px;
+  margin-top:30px;
+}
+.about-feature {
+  padding:28px;
+  background:linear-gradient(145deg,#111a14,#0c110e);
+  border:1px solid var(--line);
+  transition:transform .3s,border-color .3s;
+}
+.about-feature:hover {
+  transform:translateY(-5px);
+  border-color:#22c55e66;
+}
+.feature-number {
+  color:var(--green);
+  font:800 30px var(--display);
+  margin-bottom:20px;
+}
+.about-feature h3 {
+  color:var(--text);
+  font:700 25px var(--display);
+  margin-bottom:12px;
+}
+.about-feature p {
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.9;
+  margin:0;
+}
+.about-vision {
+  padding:45px;
+  margin-top:65px;
+  background:linear-gradient(130deg,#12251a,#0c130e 70%);
+  border:1px solid #7de69a33;
+}
+.about-vision p {
+  max-width:750px;
+  color:#aab7ac;
+  font-size:13px;
+  line-height:2;
+  margin-bottom:0;
+}
+.about-contact {
+  display:inline-flex;
+  align-items:center;
+  gap:12px;
+  margin-top:15px;
+  color:var(--green-bright);
+  font-size:13px;
+  font-weight:700;
+  transition:gap .2s;
+}
+.about-contact:hover { gap:19px; }
+.about-page a:focus-visible {
+  outline:2px solid var(--green);
+  outline-offset:5px;
+}
+@media(max-width:760px) {
+  .about-page { padding:70px 0 85px; }
+  .about-features { grid-template-columns:1fr; }
+  .about-divider { margin:45px 0; }
+  .about-section { margin-top:45px; }
+  .about-vision { padding:28px 22px; margin-top:45px; }
+  .about-intro { font-size:14px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .about-feature,.about-contact { transition:none; }
+  .about-feature:hover { transform:none; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="ambient ambient-one"></div>
+<div class="ambient ambient-two"></div>
+
+<header class="site-header">
+  <a class="brand" href="index.html">
+    <span class="brand-mark"><i></i><i></i><i></i></span>
+    <span>WICKET<span class="green">RA</span></span>
+  </a>
+
+  <nav class="main-nav" id="mainNav">
+    <a href="index.html">Home</a>
+    <a href="index.html#tournaments">Tournaments</a>
+    <a href="index.html#matches">Matches &amp; Scores</a>
+    <a href="index.html#rankings">Rankings</a>
+  </nav>
+
+  <div class="header-actions">
+    <a class="button button-small" href="contact.html">
+      Contact <span>↗</span>
+    </a>
+  </div>
+
+  <button
+    class="menu-toggle"
+    id="menuToggle"
+    aria-label="Open menu"
+    aria-expanded="false"
+    aria-controls="mainNav"
+    type="button">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</header>
+
+<main class="about-page">
+  <div class="about-container">
+
+    <span class="about-label">GET TO KNOW WICKETRA</span>
+
+    <h1>ABOUT <span>WICKETRA.</span></h1>
+
+    <p class="about-intro">
+      WICKETRA is a cricket tournament management platform
+      being developed to bring tournament organizers, teams
+      and players together in one organized place.
+
+      Our goal is to simplify the way cricket tournaments
+      are created, managed and followed.
+    </p>
+
+    <div class="about-divider"></div>
+
+    <section class="about-section">
+      <span class="about-label">01 / OUR PURPOSE</span>
+      <h2>Our Mission</h2>
+
+      <p>
+        Cricket tournaments involve many activities, including
+        team registration, player management, match scheduling,
+        scoring and tournament results.
+      </p>
+
+      <p>
+        Managing these activities separately can become difficult.
+        WICKETRA aims to bring these processes together through
+        a structured platform designed around the needs of
+        cricket tournaments.
+      </p>
+    </section>
+
+    <section class="about-section">
+      <span class="about-label">02 / WHAT WE ARE BUILDING</span>
+      <h2>One Platform. <span>Every Match.</span></h2>
+
+      <p>
+        WICKETRA is being developed around the essential
+        activities involved in organizing and following
+        cricket competitions.
+      </p>
+
+      <div class="about-features">
+
+        <article class="about-feature">
+          <div class="feature-number">01</div>
+          <h3>Tournament Management</h3>
+          <p>
+            Create and organize cricket tournaments with
+            different competition formats, registration
+            settings and tournament information.
+          </p>
+        </article>
+
+        <article class="about-feature">
+          <div class="feature-number">02</div>
+          <h3>Team &amp; Player Management</h3>
+          <p>
+            Organize team registrations, player details
+            and participation throughout a tournament.
+          </p>
+        </article>
+
+        <article class="about-feature">
+          <div class="feature-number">03</div>
+          <h3>Fixtures &amp; Scheduling</h3>
+          <p>
+            Organize tournament fixtures and match schedules
+            according to the selected competition format.
+          </p>
+        </article>
+
+        <article class="about-feature">
+          <div class="feature-number">04</div>
+          <h3>Live Scores &amp; Statistics</h3>
+          <p>
+            Build a structured match centre for scoring,
+            match results, points tables and player statistics.
+          </p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="about-vision">
+      <span class="about-label">03 / OUR VISION</span>
+      <h2>THE FUTURE OF <span>CRICKET MANAGEMENT.</span></h2>
+      <p>
+        We envision a cricket community where managing
+        tournaments is more organized, teams can participate
+        with confidence and players and fans can follow
+        the game more conveniently.
+      </p>
+    </section>
+
+    <section class="about-section">
+      <span class="about-label">04 / CONNECT WITH US</span>
+      <h2>Let's Talk Cricket.</h2>
+
+      <p>
+        Have a question, suggestion or feedback about WICKETRA?
+        We welcome your messages and would be happy to hear from you.
+      </p>
+
+      <a class="about-contact" href="contact.html">
+        Visit our Contact page <span>→</span>
+      </a>
+    </section>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-main">
+
+    <div class="footer-brand">
+      <a class="brand" href="index.html">
+        <span class="brand-mark"><i></i><i></i><i></i></span>
+        <span>WICKET<span class="green">RA</span></span>
+      </a>
+
+      <p>THE PULSE OF EVERY BALL.</p>
+
+      <p class="footer-description">
+        A platform built to make cricket tournament management
+        simpler, smarter and better organized.
+      </p>
+    </div>
+
+    <div class="footer-column">
+      <h4>COMPANY</h4>
+      <a href="about.html">About Us</a>
+      <a href="contact.html">Contact Us</a>
+    </div>
+
+    <div class="footer-column">
+      <h4>LEGAL</h4>
+      <a href="privacy-policy.html">Privacy Policy</a>
+      <a href="terms.html">Terms &amp; Conditions</a>
+      <a href="disclaimer.html">Disclaimer</a>
+    </div>
+
+    <div class="footer-column">
+      <h4>CRICKET</h4>
+      <a href="index.html#tournaments">Tournaments</a>
+      <a href="index.html#matches">Matches &amp; Live Scores</a>
+      <a href="index.html#rankings">Points Tables &amp; Rankings</a>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    <span>© 2026 WICKETRA. ALL RIGHTS RESERVED.</span>
+    <span>THE PULSE OF EVERY BALL.</span>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+
+<script>
+/* Reliable mobile navigation fallback */
+(function () {
+  const toggle = document.getElementById("menuToggle");
+  const nav = document.getElementById("mainNav");
+
+  if (!toggle || !nav) return;
+
+  toggle.addEventListener("click", function () {
+    const isOpen = nav.classList.toggle("active");
+    toggle.setAttribute("aria-expanded", String(isOpen));
+    toggle.setAttribute("aria-label", isOpen ? "Close menu" : "Open menu");
+  });
+
+  nav.querySelectorAll("a").forEach(link => {
+    link.addEventListener("click", () => {
+      nav.classList.remove("active");
+      toggle.setAttribute("aria-expanded", "false");
+      toggle.setAttribute("aria-label", "Open menu");
+    });
+  });
+
+  document.addEventListener("click", event => {
+    if (!nav.contains(event.target) && !toggle.contains(event.target)) {
+      nav.classList.remove("active");
+      toggle.setAttribute("aria-expanded", "false");
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
